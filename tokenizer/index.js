@@ -23,7 +23,6 @@ function setOutput(tokens) {
 // Update the output to match current settings, without changing the 
 // underlying token value.
 function refreshOutput() {
-  console.log("is mapcheckbox on?:", mapCheckbox.checked);
   let toks = (
     mapCheckbox.checked
     ? outputTokens.map((tok) => tokMap[tok])
@@ -37,6 +36,7 @@ function setup() {
     const delim = delimiterInput.value;
     const tokenBank = tokensInput.value.split(delim);
     let text = textInput.value;
+    // Recase text
     switch (caseSelect.value) {
       case "upper":
         text = text.toUpperCase(); break;
@@ -44,10 +44,25 @@ function setup() {
         text = text.toLowerCase(); break;
     }
   
+    // Run tokenizer
     let toki = new Tokenizer(tokenBank);
-    let tokens = toki.tokenize(text);
-    setOutput(tokens);
-    regenerateMap(tokens);
+    try {
+      let tokens = toki.tokenize(text);
+      setOutput(tokens);
+      regenerateMap(tokens);
+    } catch (err) {
+      // If it failed to parse, output an error message
+      if (err instanceof InvalidTokenError) {
+        setOutput([]);
+        window.alert(err.message);
+        // Hide empty output panels
+        Array.from(document.getElementsByClassName("hiddenIfEmpty")).forEach((el) => {
+          el.classList.add("hidden");
+        });
+        return;
+      }
+    }
+    // Unhide output panels
     Array.from(document.getElementsByClassName("hidden")).forEach((el) => {
       if (el.id != "mapContainer") {
         el.classList.remove("hidden");
@@ -93,7 +108,6 @@ function regenerateMap(tokens) {
   mapContainer.innerHTML = "";
   let sortedKeys = Object.keys(tokMap).sort();
   for (const tok of sortedKeys) {
-    console.log(tok, tokMap[tok]);
     let el = document.createElement("div");
     el.innerHTML = `${tok} -> <input data-tok="${tok}" value="${tokMap[tok]}"/>`;
     mapContainer.appendChild(el);
@@ -131,15 +145,16 @@ class Tokenizer {
   // or throw an InvalidTokenError if not possible
   findNextToken(text, startPos) {
     let tokLen = this.maxLen;
+    let token;
     while (tokLen > 0) {
-      let token = text.slice(startPos, startPos+tokLen);
+      token = text.slice(startPos, startPos+tokLen);
       if (this.tokens.includes(token)) {
         return token;
       }
       tokLen -= 1;
     }
     throw new InvalidTokenError(
-      "Cannot find a valid token",
+      `No valid token in "${token}", check your settings`,
       text.slice(startPos, startPos+this.maxLen),
       this.tokens,
     );
@@ -150,7 +165,13 @@ class Tokenizer {
     let tokens = [];
     let pos = 0;
     while (pos < text.length) {
-      tokens.push(this.findNextToken(text, pos));
+      try {
+        tokens.push(this.findNextToken(text, pos));
+      } catch (err) {
+        if (err instanceof InvalidTokenError) {
+          throw err;
+        }
+      }
       pos += tokens[tokens.length-1].length;
     }
     return tokens;
