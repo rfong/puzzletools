@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+body {
+  max-width: 800px;
+}
+
+#inputText {
+  width: 400px;
+}
+
+button, select {
+  cursor: pointer;
+}
+
+.footnote {
+  color: #666;
+}
+
+#aboutContent {
+  margin-top: 5em;
+}
+
+</style>
+
+<script src="https://cdn.jsdelivr.net/pyodide/v0.26.2/full/pyodide.js"></script>
+<script type="module" src="index.js"></script>
+</head>
+
+<body>
+  <h1>multi language scrabble scorer</h1>
+  <label for="lang">Choose a language:</label>
+  <select name="lang" id="langSelect">
+  </select>
+  <p id="langCharSet" class="footnote"></p>
+
+  <button id="scoreButton">Get score</button>
+  <input id="inputText" 
+         placeholder="enter scrabble text to score; multiple words are ok; case insensitive"
+         value=""></input>
+
+  <p id="scoreOutput">loading...</p>
+
+
+  <div id="aboutContent" class="footnote">
+    Wrote a python script while solving <a href="https://mythstoryhunt.world/puzzles/t-counts-for-two">T (Counts) For Two</a> (major spoilers, obviously) on <a href="https://puzzles.mit.edu/2024/">MIT Mystery Hunt 2024</a>, then made a pyodide web interface for it later.
+  </div>
+</body>
+
+</html>

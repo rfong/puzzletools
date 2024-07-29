@@ -1,0 +1,8 @@
+1 point: E ×11, A ×10, I ×9, O ×8, N ×7, R ×6, S ×6, J ×4, L ×4, T ×4
+2 points: D ×4, V ×4
+3 points: K ×3, M ×2, P ×2, U ×2
+4 points: B ×2, G ×2, Z ×2
+5 points: Č ×1, H ×1
+6 points: Š ×1
+8 points: C ×1
+10 points: F ×1, Ž ×1
