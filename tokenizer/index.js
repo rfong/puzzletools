@@ -9,7 +9,8 @@ const tokensInput = document.getElementById("tokens"),
       mapContainer = document.getElementById("mapContainer");
 
 let outputTokens,
-    tokMap = {};
+    tokMap = {},
+    myTokenizer;
 
 // set some default values
 tokensInput.value = "a,b,c,aaa";
@@ -30,11 +31,11 @@ function refreshOutput() {
   outputEl.innerHTML = toks.join(delimiterOutput.value);
 }
 
+// setup event listeners
 function setup() {
   // when button is clicked, run the tokenizer and display parsed tokens
   tokenizeButton.addEventListener("click", () => {
-    const delim = delimiterInput.value;
-    const tokenBank = tokensInput.value.split(delim);
+    const tokenBank = tokensInput.value.split(delimiterInput.value);
     let text = textInput.value;
     // Recase text
     switch (caseSelect.value) {
@@ -45,11 +46,11 @@ function setup() {
     }
   
     // Run tokenizer
-    let toki = new Tokenizer(tokenBank);
+    let myTokenizer = new Tokenizer(tokenBank);
     try {
-      let tokens = toki.tokenize(text);
+      let tokens = myTokenizer.tokenize(text);
       setOutput(tokens);
-      regenerateMap(tokens);
+      regenerateMap(tokenBank);
     } catch (err) {
       // If it failed to parse, output an error message
       if (err instanceof InvalidTokenError) {
@@ -91,23 +92,23 @@ setup();
 // received new tokens. update the map, but preserve any values mapped to 
 // tokens that are still in the current set.
 function regenerateMap(tokens) {
-  // delete obsolete tokens from map
-  for (const tok of Object.keys(tokMap)) {
-    if (!tokens.includes(tok)) {
-      delete tokMap[tok];
-    }
-  }
-  // add new tokens to map
+  let newMap = {};
+  // make new map, copying over old values
   for (const tok of tokens) {
-    if (!Object.keys(tokMap).includes(tok)) {
-      tokMap[tok] = tok;
+    // copy over old values
+    if (tok in tokMap) {
+      newMap[tok] = tokMap[tok];
+
+    // otherwise just map to itself
+    } else {
+      newMap[tok] = tok;
     }
   }
+  tokMap = newMap;
 
   // update the HTML
   mapContainer.innerHTML = "";
-  let sortedKeys = Object.keys(tokMap).sort();
-  for (const tok of sortedKeys) {
+  for (const tok of tokens) { // follow the canonical token order
     let el = document.createElement("div");
     el.innerHTML = `${tok} -> <input data-tok="${tok}" value="${tokMap[tok]}"/>`;
     mapContainer.appendChild(el);
@@ -134,7 +135,7 @@ class InvalidTokenError extends Error {
 // multi-char string tokenizer
 class Tokenizer {
   constructor(tokens) {
-    this.tokens = tokens;
+    this.tokens = tokens; // maintain the original order
     this.maxLen = 0;
     for (const tok of tokens) {
       this.maxLen = Math.max(this.maxLen, tok.length);
@@ -178,3 +179,24 @@ class Tokenizer {
   }
 
 }
+/*
+if(Array.prototype.equals) {
+  console.warn("Overriding existing Array.prototype.equals.);
+}
+Array.prototype.equals = function (array) {
+  // Sanity checks
+  if (!array) return false;
+  if (array === this) return true;
+  if (this.length != array.length) return false;
+  // Compare all values
+  for (var i=0; i<this.length. i++) {
+    // if both elements are arrays, recurse
+    if (this[i] instanceof Array && array[i] instanceof Array
+        && !this[i].equals(array[i])
+    ) return false;
+    // direct comparison for primitives. this won't work for objects
+    if (this[i] != array[i]) return false;
+  }
+  return true;
+}
+*/
