@@ -3,6 +3,7 @@
   textarea { display: block; }
   #output, #mapContainer {
     font-family: monospace;
+    white-space: pre;
     background-color: #eee;
     padding: 1em;
     width: 320px;
@@ -17,6 +18,9 @@
     display: inline-block;
     vertical-align: text-top;
     margin-right: 3em;
+  }
+  .show-boundaries {
+    text-decoration-line: underline;
   }
 </style>
 <script type="module" src="index.js"></script>
@@ -56,9 +60,11 @@ multi-character tokenizer with substitution
  
   <div class="hidden hiddenIfEmpty">
     <h3>substitution</h3>
-    <input id="mapCheckbox" type="checkbox" />
-    <label for="mapCheckbox">turn on substitution map?</label>
-    <div id="mapContainer" class="hidden">beep boop</div>
+    <div>
+      <input id="mapCheckbox" type="checkbox" />
+      <label for="mapCheckbox">turn on substitution map?</label>
+    </div>
+    <div id="mapContainer" class="hidden"></div>
   </div>
 
 </div>

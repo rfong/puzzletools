@@ -1,3 +1,6 @@
+import { InvalidTokenError, Tokenizer } from "./tokenizer.js";
+import { getOutput, getUpdatedMap, isWhitespaceInTokens } from "./helpers.js";
+
 const tokensInput = document.getElementById("tokens"),
       delimiterInput = document.getElementById("delimiter"),
       textInput = document.getElementById("input"),
@@ -12,23 +15,21 @@ let outputTokens,
     tokMap = {},
     myTokenizer;
 
-// set some default values
+// set some default example values
 tokensInput.value = "a,b,c,aaa";
 textInput.value = "aabaaac";
 
+// Set new output token values, and refresh the display
 function setOutput(tokens) {
   outputTokens = tokens;
   refreshOutput();
 }
 
 // Update the output to match current settings, without changing the 
-// underlying token value.
+// underlying token representation.
 function refreshOutput() {
-  let toks = (
-    mapCheckbox.checked
-    ? outputTokens.map((tok) => tokMap[tok])
-    : outputTokens);
-  outputEl.innerHTML = toks.join(delimiterOutput.value);
+  outputEl.innerHTML = getOutput(
+    outputTokens, delimiterOutput.value, tokMap, mapCheckbox.checked);
 }
 
 // setup event listeners
@@ -49,8 +50,9 @@ function setup() {
     let myTokenizer = new Tokenizer(tokenBank);
     try {
       let tokens = myTokenizer.tokenize(text);
+      // Update display and token map
       setOutput(tokens);
-      regenerateMap(tokenBank);
+      refreshMap(tokenBank);
     } catch (err) {
       // If it failed to parse, output an error message
       if (err instanceof InvalidTokenError) {
@@ -62,6 +64,7 @@ function setup() {
         });
         return;
       }
+      throw err;
     }
     // Unhide output panels
     Array.from(document.getElementsByClassName("hidden")).forEach((el) => {
@@ -73,7 +76,7 @@ function setup() {
   
   // automatically change output display when the output delimiter value changes
   delimiterOutput.addEventListener("input", (evt) => {
-    refreshOutput(outputTokens);
+    refreshOutput();
   });
   
   // when substitution map is toggled, update display
@@ -91,26 +94,20 @@ setup();
 
 // received new tokens. update the map, but preserve any values mapped to 
 // tokens that are still in the current set.
-function regenerateMap(tokens) {
-  let newMap = {};
-  // make new map, copying over old values
-  for (const tok of tokens) {
-    // copy over old values
-    if (tok in tokMap) {
-      newMap[tok] = tokMap[tok];
-
-    // otherwise just map to itself
-    } else {
-      newMap[tok] = tok;
-    }
-  }
-  tokMap = newMap;
+function refreshMap(tokens) {
+  tokMap = getUpdatedMap(tokMap, tokens);
+  let hasWhitespace = isWhitespaceInTokens(tokens);
 
   // update the HTML
   mapContainer.innerHTML = "";
   for (const tok of tokens) { // follow the canonical token order
     let el = document.createElement("div");
-    el.innerHTML = `${tok} -> <input data-tok="${tok}" value="${tokMap[tok]}"/>`;
+    el.innerHTML = (
+      hasWhitespace
+      ? `<span class="show-boundaries">${tok}</span>`
+      : tok
+    );
+    el.innerHTML += ` -> <input data-tok="${tok}" value="${tokMap[tok]}"/>`;
     mapContainer.appendChild(el);
   }
 
@@ -122,81 +119,3 @@ function regenerateMap(tokens) {
   }
 }
 
-// this error is thrown when text is unparseable with the given set of tokens
-class InvalidTokenError extends Error {
-  constructor(message, searchText, tokenBank) {
-    super(message);
-    this.name = "InvalidTokenError";
-    this.searchText = searchText;
-    this.tokenBank = tokenBank;
-  }
-}
-
-// multi-char string tokenizer
-class Tokenizer {
-  constructor(tokens) {
-    this.tokens = tokens; // maintain the original order
-    this.maxLen = 0;
-    for (const tok of tokens) {
-      this.maxLen = Math.max(this.maxLen, tok.length);
-    }
-  }
-
-  // Search for the next possible token in descending length order,
-  // or throw an InvalidTokenError if not possible
-  findNextToken(text, startPos) {
-    let tokLen = this.maxLen;
-    let token;
-    while (tokLen > 0) {
-      token = text.slice(startPos, startPos+tokLen);
-      if (this.tokens.includes(token)) {
-        return token;
-      }
-      tokLen -= 1;
-    }
-    throw new InvalidTokenError(
-      `No valid token in "${token}", check your settings`,
-      text.slice(startPos, startPos+this.maxLen),
-      this.tokens,
-    );
-  }
-
-  // Return list of tokens in this text
-  tokenize(text) {
-    let tokens = [];
-    let pos = 0;
-    while (pos < text.length) {
-      try {
-        tokens.push(this.findNextToken(text, pos));
-      } catch (err) {
-        if (err instanceof InvalidTokenError) {
-          throw err;
-        }
-      }
-      pos += tokens[tokens.length-1].length;
-    }
-    return tokens;
-  }
-
-}
-/*
-if(Array.prototype.equals) {
-  console.warn("Overriding existing Array.prototype.equals.);
-}
-Array.prototype.equals = function (array) {
-  // Sanity checks
-  if (!array) return false;
-  if (array === this) return true;
-  if (this.length != array.length) return false;
-  // Compare all values
-  for (var i=0; i<this.length. i++) {
-    // if both elements are arrays, recurse
-    if (this[i] instanceof Array && array[i] instanceof Array
-        && !this[i].equals(array[i])
-    ) return false;
-    // direct comparison for primitives. this won't work for objects
-    if (this[i] != array[i]) return false;
-  }
-  return true;
-}
-*/
