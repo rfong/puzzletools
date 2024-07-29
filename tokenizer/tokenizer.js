@@ -55,24 +55,3 @@ export class Tokenizer {
   }
 
 }
-/*
-if(Array.prototype.equals) {
-  console.warn("Overriding existing Array.prototype.equals.);
-}
-Array.prototype.equals = function (array) {
-  // Sanity checks
-  if (!array) return false;
-  if (array === this) return true;
-  if (this.length != array.length) return false;
-  // Compare all values
-  for (var i=0; i<this.length. i++) {
-    // if both elements are arrays, recurse
-    if (this[i] instanceof Array && array[i] instanceof Array
-        && !this[i].equals(array[i])
-    ) return false;
-    // direct comparison for primitives. this won't work for objects
-    if (this[i] != array[i]) return false;
-  }
-  return true;
-}
-*/

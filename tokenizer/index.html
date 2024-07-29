@@ -22,6 +22,10 @@
   .show-boundaries {
     text-decoration-line: underline;
   }
+  .warning {
+    font-style: italic;
+    color: #f00;
+  }
 </style>
 <script type="module" src="index.js"></script>
 
@@ -54,8 +58,10 @@ multi-character tokenizer with substitution
     <option value="upper">cast to uppercase</option>
     <option value="lower">cast to lowercase</option>
   </select>
-  <br/>
-  <button id="tokenizeButton">go</button>
+  <div>
+    <button id="tokenizeButton">go</button>
+    <span id="inputChangeWarning" class="hidden warning">you have unsaved changes</span>
+  </div>
   </p>
  
   <div class="hidden hiddenIfEmpty">

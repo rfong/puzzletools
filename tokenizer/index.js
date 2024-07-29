@@ -13,7 +13,8 @@ const tokensInput = document.getElementById("tokens"),
 
 let outputTokens,
     tokMap = {},
-    myTokenizer;
+    myTokenizer,
+    lastInputs = {};
 
 // set some default example values
 tokensInput.value = "a,b,c,aaa";
@@ -32,21 +33,54 @@ function refreshOutput() {
     outputTokens, delimiterOutput.value, tokMap, mapCheckbox.checked);
 }
 
+function getTokenBank() {
+  return tokensInput.value.split(delimiterInput.value);
+}
+
+// return true if inputs have changed since last run.
+// note that we care if the computed token bank has changed, but don't care if 
+// delimiter & tokens change together such that token bank is the same.
+function hasInputChanged() {
+  if (caseSelect.value != lastInputs.caseSel) return true;
+  if (textInput.value != lastInputs.text) return true;
+  return !getTokenBank().equals(lastInputs.tokenBank);
+}
+
+// if inputs have changed, do something about it
+function checkInputChanged() {
+  const warningEl = document.getElementById("inputChangeWarning");
+  if (hasInputChanged()) warningEl.classList.remove("hidden");
+  else warningEl.classList.add("hidden");
+}
+
 // setup event listeners
 function setup() {
+
+  // setup input change listeners
+  [tokensInput, delimiterInput, textInput].forEach((el) => {
+    el.addEventListener("input", checkInputChanged);
+  });
+  caseSelect.addEventListener("change", checkInputChanged);
+  
   // when button is clicked, run the tokenizer and display parsed tokens
   tokenizeButton.addEventListener("click", () => {
-    const tokenBank = tokensInput.value.split(delimiterInput.value);
+    const tokenBank = getTokenBank();
     let text = textInput.value;
-    // Recase text
+    // recase text
     switch (caseSelect.value) {
       case "upper":
         text = text.toUpperCase(); break;
       case "lower":
         text = text.toLowerCase(); break;
     }
+    // save inputs for future comparison
+    lastInputs = {
+      tokenBank: tokenBank,
+      text: text,
+      caseSel: caseSelect.value,
+    };
   
-    // Run tokenizer
+    // run tokenizer
     let myTokenizer = new Tokenizer(tokenBank);
     try {
       let tokens = myTokenizer.tokenize(text);
@@ -67,10 +101,8 @@ function setup() {
       throw err;
     }
     // Unhide output panels
-    Array.from(document.getElementsByClassName("hidden")).forEach((el) => {
-      if (el.id != "mapContainer") {
-        el.classList.remove("hidden");
-      }
+    Array.from(document.getElementsByClassName("hiddenIfEmpty")).forEach((el) => {
+      el.classList.remove("hidden");
     });
   });
   
@@ -119,3 +151,22 @@ function refreshMap(tokens) {
   }
 }
 
+if(Array.prototype.equals) {
+  console.warn("Overriding existing Array.prototype.equals.");
+}
+Array.prototype.equals = function (array) {
+  // Sanity checks
+  if (!array) return false;
+  if (array === this) return true;
+  if (this.length != array.length) return false;
+  // Compare all values
+  for (var i=0; i<this.length; i++) {
+    // if both elements are arrays, recurse
+    if (this[i] instanceof Array && array[i] instanceof Array
+        && !this[i].equals(array[i])
+    ) return false;
+    // direct comparison for primitives. this won't work for objects
+    if (this[i] != array[i]) return false;
+  }
+  return true;
+}
