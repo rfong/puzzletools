@@ -43,6 +43,7 @@ function getTokenBank() {
 function hasInputChanged() {
   if (caseSelect.value != lastInputs.caseSel) return true;
   if (textInput.value != lastInputs.text) return true;
+  console.log(getTokenBank(), lastInputs.tokenBank, getTokenBank().equals(lastInputs.tokenBank));
   return !getTokenBank().equals(lastInputs.tokenBank);
 }
 
@@ -79,6 +80,7 @@ function setup() {
       text: text,
       caseSel: caseSelect.value,
     };
+    checkInputChanged();
   
     // run tokenizer
     let myTokenizer = new Tokenizer(tokenBank);
