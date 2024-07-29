@@ -11,7 +11,7 @@ export class InvalidTokenError extends Error {
 // multi-char string tokenizer
 export class Tokenizer {
   constructor(tokens) {
-    this.tokens = tokens; // maintain the original order
+    this.tokens = tokens; // maintain the original order of the token bank
     this.maxLen = 0;
     for (const tok of tokens) {
       this.maxLen = Math.max(this.maxLen, tok.length);
@@ -39,19 +39,19 @@ export class Tokenizer {
 
   // Return list of tokens in this text
   tokenize(text) {
-    let tokens = [];
+    let toks = [];
     let pos = 0;
     while (pos < text.length) {
       try {
-        tokens.push(this.findNextToken(text, pos));
+        toks.push(this.findNextToken(text, pos));
       } catch (err) {
         if (err instanceof InvalidTokenError) {
           throw err;
         }
       }
-      pos += tokens[tokens.length-1].length;
+      pos += toks[toks.length-1].length;
     }
-    return tokens;
+    return toks;
   }
 
 }

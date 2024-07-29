@@ -14,6 +14,9 @@
   button, input, select {
     margin-top: 5px;
   }
+  input {
+    font-family: monospace;
+  }
   .left, .right {
     display: inline-block;
     vertical-align: text-top;
@@ -70,7 +73,15 @@ multi-character tokenizer with substitution
       <input id="mapCheckbox" type="checkbox" />
       <label for="mapCheckbox">use substitution map?</label>
     </div>
-    <div id="mapContainer" class="hidden"></div>
+    <div id="mapPanel" class="hidden">
+      <div>
+        <label>autofill?</label>
+        <button class="mapButton" id="fillLetters">letters</button>
+        <button class="mapButton" id="fillNumsOne">numbers 1+</button>
+        <button class="mapButton" id="fillNumsZero">numbers 0+</button>
+      </div>
+      <div id="mapContainer"></div>
+    </div>
   </div>
 
 </div>

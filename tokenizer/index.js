@@ -20,6 +20,17 @@ let outputTokens,
 tokensInput.value = "a,b,c,aaa";
 textInput.value = "aabaaac";
 
+// shorthand for get element by id
+function getEl(id) {
+  return document.getElementById(id);
+}
+
+// toggle for "hidden" class
+function setHidden(el, isHidden) {
+  if (isHidden) el.classList.add("hidden");
+  else el.classList.remove("hidden");
+}
+
 // Set new output token values, and refresh the display
 function setOutput(tokens) {
   outputTokens = tokens;
@@ -43,7 +54,6 @@ function getTokenBank() {
 function hasInputChanged() {
   if (caseSelect.value != lastInputs.caseSel) return true;
   if (textInput.value != lastInputs.text) return true;
-  console.log(getTokenBank(), lastInputs.tokenBank, getTokenBank().equals(lastInputs.tokenBank));
   return !getTokenBank().equals(lastInputs.tokenBank);
 }
 
@@ -83,7 +93,7 @@ function setup() {
     checkInputChanged();
   
     // run tokenizer
-    let myTokenizer = new Tokenizer(tokenBank);
+    myTokenizer = new Tokenizer(tokenBank);
     try {
       let tokens = myTokenizer.tokenize(text);
       // Update display and token map
@@ -115,24 +125,67 @@ function setup() {
   
   // when substitution map is toggled, update display
   mapCheckbox.addEventListener("change", () => {
+    const mapPanel = getEl("mapPanel");
     if (mapCheckbox.checked == false) {
-      mapContainer.classList.add("hidden");
+      mapPanel.classList.add("hidden");
     } else {
-      mapContainer.classList.remove("hidden");
+      mapPanel.classList.remove("hidden");
     }
     // in either case, refresh the output
     refreshOutput();
   });
+
+  // listen for map autofill buttons
+  Array.from(document.getElementsByClassName("mapButton")).forEach((el) => {
+    el.addEventListener("click", (evt) => {
+      switch(evt.target.id) {
+        // TODO should this only be available for 1-26?
+        case "fillLetters":
+          var i = 1;
+          for (const tok of myTokenizer.tokens) {
+            tokMap[tok] = String.fromCharCode(64 + i);
+            i++;
+          }
+          break;
+        case "fillNumsOne":
+        case "fillNumsZero":
+          var i = (evt.target.id.endsWith("Zero") ? 0 : 1);
+          for (const tok of myTokenizer.tokens) {
+            tokMap[tok] = i;
+            i = (i+1)%10;
+          }
+          break;
+      }
+      refreshDisplay();
+    });
+  })
 }
 setup();
 
+// refresh all display based on current state
+function refreshDisplay() {
+  refreshMapDisplay();
+  refreshOutput();
+}
+
 // received new tokens. update the map, but preserve any values mapped to 
 // tokens that are still in the current set.
-function refreshMap(tokens) {
+function refreshMap() {
+  let tokens = myTokenizer.tokens;
   tokMap = getUpdatedMap(tokMap, tokens);
+  refreshMapDisplay();
+}
+// just refresh the display without changing state
+function refreshMapDisplay() {
+  let tokens = myTokenizer.tokens;
   let hasWhitespace = isWhitespaceInTokens(tokens);
 
-  // update the HTML
+  // update which map buttons are visible
+  setHidden(getEl("fillLetters"), tokens.length > 26);
+  setHidden(getEl("fillNumsOne"), tokens.length > 10);
+  setHidden(getEl("fillNumsZero"), tokens.length > 10);
+
+  // update the HTML contents
   mapContainer.innerHTML = "";
   for (const tok of tokens) { // follow the canonical token order
     let el = document.createElement("div");
