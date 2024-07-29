@@ -1,0 +1,75 @@
+<link rel="stylesheet" href="../style.css" />
+<style>
+  textarea { display: block; }
+  #output, #mapContainer {
+    font-family: monospace;
+    background-color: #eee;
+    padding: 1em;
+    width: 320px;
+  }
+  .hidden {
+    display: none;
+  }
+  button, input, select {
+    margin-top: 5px;
+  }
+  .left, .right {
+    display: inline-block;
+    vertical-align: text-top;
+    margin-right: 3em;
+  }
+</style>
+<script type="module" src="index.js"></script>
+
+<div><a href="../"><< back</a></div>
+
+<h1>tokenizer</h1>
+multi-character tokenizer with substitution
+
+<div id="main">
+
+<div class="left">
+  <h3>inputs</h3>
+  <p>
+  <label for="tokens">list of allowed tokens (whitespace will not be stripped)</label>
+  <textarea id="tokens" cols="40" rows="3"></textarea>
+  </p>
+  
+  <p>
+  <label for="delimiter">delimiter for the list above</label>
+  <textarea id="delimiter"
+    placeholder="list delimiter" cols="40">,</textarea>
+  </p>
+  
+  <p>
+  <label for="input">text to tokenize</label>
+  <textarea id="input"
+    cols="40" rows="6"></textarea>
+  <select id="caseSelect">
+    <option value="none">don't change casing</option>
+    <option value="upper">cast to uppercase</option>
+    <option value="lower">cast to lowercase</option>
+  </select>
+  <br/>
+  <button id="tokenizeButton">go</button>
+  </p>
+ 
+  <div class="hidden">
+    <h3>substitution</h3>
+    <input id="mapCheckbox" type="checkbox" />
+    <label for="mapCheckbox">turn on substitution map?</label>
+    <div id="mapContainer" class="hidden">beep boop</div>
+  </div>
+
+</div>
+
+<div class="right">
+  <div class="hidden">
+  <h3>output</h3>
+  <p>
+    <label for="outDelimiter">output delimiter</label>
+    <input id="outDelimiter" value=", " />
+  </p>
+  <p id="output"></p>
+  </div>
+</div>
