@@ -1,14 +1,30 @@
 // this error is thrown when text is unparseable with the given set of tokens
-export class InvalidTokenError extends Error {
+export class ParseError extends Error {
   constructor(message, searchText, tokenBank) {
     super(message);
-    this.name = "InvalidTokenError";
+    this.name = "ParseError";
     this.searchText = searchText;
     this.tokenBank = tokenBank;
   }
 }
 
-// multi-char string tokenizer
+// this error is thrown when text is unparseable with the given set of tokens
+export class InvalidTokenBankError extends Error {
+  constructor(message, searchText, tokenBank) {
+    super(message);
+    this.name = "InvalidTokenBankError";
+    this.tokenBank = tokenBank;
+  }
+}
+
+export function isTokenBankValid(tokens) {
+  if (new Set(tokens).size != tokens.length) 
+    throw new InvalidTokenBankError("cannot have duplicate tokens");
+  if (tokens.some((tok) => tok.length == 0))
+    throw new InvalidTokenBankError("cannot have zero-length token");
+  return true;
+}
+
 export class Tokenizer {
   constructor(tokens) {
     this.tokens = tokens; // maintain the original order of the token bank
@@ -19,7 +35,7 @@ export class Tokenizer {
   }
 
   // Search for the next possible token in descending length order,
-  // or throw an InvalidTokenError if not possible
+  // or throw an ParseError if not possible
   findNextToken(text, startPos) {
     let tokLen = this.maxLen;
     let token;
@@ -30,7 +46,7 @@ export class Tokenizer {
       }
       tokLen -= 1;
     }
-    throw new InvalidTokenError(
+    throw new ParseError(
       `No valid token in "${token}", check your settings`,
       text.slice(startPos, startPos+this.maxLen),
       this.tokens,
@@ -45,7 +61,7 @@ export class Tokenizer {
       try {
         toks.push(this.findNextToken(text, pos));
       } catch (err) {
-        if (err instanceof InvalidTokenError) {
+        if (err instanceof ParseError) {
           throw err;
         }
       }

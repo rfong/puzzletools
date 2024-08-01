@@ -41,15 +41,17 @@ multi-character tokenizer with substitution
 
 <div class="left">
   <h3>inputs</h3>
+  <div class="footnote">
+    note that whitespace will not be stripped from any fields
+  </div>
+
   <p>
-  <label for="tokens">list of allowed tokens (whitespace will not be stripped)</label>
+  <label for="tokens">list of allowed tokens</label>
   <textarea id="tokens" cols="40" rows="3"></textarea>
-  </p>
-  
-  <p>
-  <label for="delimiter">delimiter for the list above</label>
+  <label for="delimiter">token bank delimiter</label>
   <textarea id="delimiter"
     placeholder="list delimiter" cols="40">,</textarea>
+  <p id="tokenBankWarning" class="warning"></span>
   </p>
   
   <p>

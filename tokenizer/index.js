@@ -1,4 +1,4 @@
-import { InvalidTokenError, Tokenizer } from "./tokenizer.js";
+import { ParseError, isTokenBankValid, InvalidTokenBankError, Tokenizer } from "./tokenizer.js";
 import { getOutput, getUpdatedMap, isWhitespaceInTokens } from "./helpers.js";
 
 const tokensInput = document.getElementById("tokens"),
@@ -27,6 +27,7 @@ function getEl(id) {
 
 // toggle for "hidden" class
 function setHidden(el, isHidden) {
+  console.debug(`set el#${el.id} to hidden=${isHidden}`);
   if (isHidden) el.classList.add("hidden");
   else el.classList.remove("hidden");
 }
@@ -44,24 +45,42 @@ function refreshOutput() {
     outputTokens, delimiterOutput.value, tokMap, mapCheckbox.checked);
 }
 
-function getTokenBank() {
-  return tokensInput.value.split(delimiterInput.value);
+function getAndValidateTokenBank() {
+  let tokens = tokensInput.value.split(delimiterInput.value);
+  try {
+    if (isTokenBankValid(tokens)) {
+      console.debug("token bank is valid");
+      tokenizeButton.removeAttribute("disabled");
+      getEl("tokenBankWarning").innerHTML = "";
+    }
+  } catch (err) {
+    if (err instanceof InvalidTokenBankError) {
+      console.debug(err.message);
+      tokenizeButton.setAttribute("disabled", true);
+      getEl("tokenBankWarning").innerHTML = err.message;
+    } else { throw err; }
+  }
+  return tokens;
 }
 
 // return true if inputs have changed since last run.
 // note that we care if the computed token bank has changed, but don't care if 
 // delimiter & tokens change together such that token bank is the same.
 function hasInputChanged() {
+  // this comes first to ensure the validity check runs
+  let tokens = getAndValidateTokenBank();
+
   if (caseSelect.value != lastInputs.caseSel) return true;
   if (textInput.value != lastInputs.text) return true;
-  return !getTokenBank().equals(lastInputs.tokenBank);
+  console.debug(tokens, lastInputs.tokenBank, tokens.equals(lastInputs.tokenBank));
+  return !tokens.equals(lastInputs.tokenBank);
 }
 
 // if inputs have changed, do something about it
 function checkInputChanged() {
-  const warningEl = document.getElementById("inputChangeWarning");
-  if (hasInputChanged()) warningEl.classList.remove("hidden");
-  else warningEl.classList.add("hidden");
+  // hide change warning if nothing has changed, show if it has changed
+  setHidden(getEl("inputChangeWarning"), !hasInputChanged());
+  console.debug("has input changed?:", hasInputChanged());
 }
 
 // setup event listeners
@@ -75,7 +94,7 @@ function setup() {
   
   // when button is clicked, run the tokenizer and display parsed tokens
   tokenizeButton.addEventListener("click", () => {
-    const tokenBank = getTokenBank();
+    const tokenBank = getAndValidateTokenBank(); 
     let text = textInput.value;
     // recase text
     switch (caseSelect.value) {
@@ -101,7 +120,7 @@ function setup() {
       refreshMap(tokenBank);
     } catch (err) {
       // If it failed to parse, output an error message
-      if (err instanceof InvalidTokenError) {
+      if (err instanceof ParseError) {
         setOutput([]);
         window.alert(err.message);
         // Hide empty output panels
