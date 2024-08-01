@@ -1,3 +1,9 @@
 body {
   margin: 50px;
 }
+
+.footnote {
+  color: #666;
+  font-style: italic;
+}
+
