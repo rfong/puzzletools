@@ -1,15 +1,21 @@
+import { setHidden, getEl } from "../helpers.js";
 import { ParseError, isTokenBankValid, InvalidTokenBankError, Tokenizer } from "./tokenizer.js";
 import { getOutput, getUpdatedMap, isWhitespaceInTokens } from "./helpers.js";
 
-const tokensInput = document.getElementById("tokens"),
-      delimiterInput = document.getElementById("delimiter"),
-      textInput = document.getElementById("input"),
-      caseSelect = document.getElementById("caseSelect"),
-      tokenizeButton = document.getElementById("tokenizeButton"),
-      delimiterOutput = document.getElementById("outDelimiter"),
-      outputEl = document.getElementById("output"),
-      mapCheckbox = document.getElementById("mapCheckbox"),
-      mapContainer = document.getElementById("mapContainer");
+// shorthand for get element by id
+function getEl(id) {
+  return document.getElementById(id);
+}
+
+const tokensInput = getEl("tokens"),
+      delimiterInput = getEl("delimiter"),
+      textInput = getEl("input"),
+      caseSelect = getEl("caseSelect"),
+      tokenizeButton = getEl("tokenizeButton"),
+      delimiterOutput = getEl("outDelimiter"),
+      outputEl = getEl("output"),
+      mapCheckbox = getEl("mapCheckbox"),
+      mapContainer = getEl("mapContainer");
 
 let outputTokens,
     tokMap = {},
@@ -19,18 +25,6 @@ let outputTokens,
 // set some default example values
 tokensInput.value = "a,b,c,aaa";
 textInput.value = "aabaaac";
-
-// shorthand for get element by id
-function getEl(id) {
-  return document.getElementById(id);
-}
-
-// toggle for "hidden" class
-function setHidden(el, isHidden) {
-  console.debug(`set el#${el.id} to hidden=${isHidden}`);
-  if (isHidden) el.classList.add("hidden");
-  else el.classList.remove("hidden");
-}
 
 // Set new output token values, and refresh the display
 function setOutput(tokens) {
