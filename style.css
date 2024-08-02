@@ -3,8 +3,17 @@ body {
 }
 
 .footnote {
-  color: #666;
   font-style: italic;
+  color: #666;
+}
+
+.warning {
+  font-style: italic;
+  color: #f00;
+}
+
+.monospace {
+  font-family: monospace;
 }
 
 .hidden {
