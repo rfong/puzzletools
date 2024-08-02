@@ -17,12 +17,10 @@ myApp.controller('WordleSearchCtrl', function($scope) {
 
   // when the 'search' button is clicked
   $scope.search = function() {
-    console.log("search");
     $scope.output = ["foo", "bar"];
     // get all negations for each position
     let negations = $scope.yellows.map(
       (yellowRow) => yellowRow.concat($scope.greys));
-    console.log(negations);
     // build the regex
     var regStr = "";
     for (var i=0; i<$scope.wordLen; i++) {
@@ -40,7 +38,7 @@ myApp.controller('WordleSearchCtrl', function($scope) {
       $scope.wordsByLen[$scope.wordLen].match(re)
       .map((s) => s.replace(/,/g, ''))
     );
-    console.log(regStr, $scope.output);
+    console.debug(regStr, $scope.output);
   };
 
   // when the grey raw input changes
@@ -67,7 +65,7 @@ myApp.controller('WordleSearchCtrl', function($scope) {
     let c = window.prompt("set a character").trim() ?? '',
         el = Array.from(getEl("green-cells").children)[posn];
     $scope.greens[posn] = c;
-    console.log(`set ${c} at posn ${posn}`);
+    console.debug(`set ${c} at posn ${posn}`);
     $scope.checkInputs();
   }
 
@@ -77,7 +75,7 @@ myApp.controller('WordleSearchCtrl', function($scope) {
     let greySet = new Set($scope.greys);
     let greenSet = new Set($scope.greens);
     let yellowSet = new Set(flatten($scope.yellows));
-    console.log(greySet, greenSet, yellowSet);
+    console.debug(greySet, greenSet, yellowSet);
     if (greySet.intersection(greenSet).size > 0) {
       warnings.push("grey letters should not overlap with green letters");
     }
@@ -95,7 +93,6 @@ myApp.controller('WordleSearchCtrl', function($scope) {
 
   // setup
   setDefaultValues();
-  console.log("starting controller");
   fetch("./wordnik_by_len.json")
   .then((response) => response.json())
   .then((words) => {
