@@ -1,0 +1,116 @@
+<html ng-app="wordleSearchApp"
+      ng-controller="WordleSearchCtrl">
+  <head>
+    <script type="module" src="../../lib/angular.min.js"></script>
+    <script type="module" src="index.js"></script>
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../index.css" />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+
+    <div><a href="../../"><< back</a></div>
+
+    <h1>IPA wordle-search</h1>
+    <p class="footnote">limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a></p>
+
+    <div class="column">
+
+      <div>
+        click for ipa input
+        <div class="wordle-cell ipa-input"
+             ng-click="openIpaKeyboard()"
+             >+</div>
+      </div>
+
+      <div>
+        <label for="lengthSelect">word length</label>
+        <select id="lengthSelect"
+                ng-model="wordLen"
+                ng-options="len for len in wordLens"
+                ng-change="onLenChange()"
+                ></select>
+      </div>
+    
+      <h3>greys (disallowed letters)</h3>
+      <p>
+        <input id="disallowed"
+               placeholder="a,b,c,..." 
+               ng-model="disallowed"
+               ng-change="onGreyChange()" />
+      </p>
+      <div id="grey-cells">
+        <div ng-repeat="ch in greys"
+             class="wordle-cell grey-cell"
+             >{{ch}}</div>
+      </div>
+    
+      <h3>greens (correct letters)</h3>
+      <div ipa-keyboard
+           ng-show="keyboardOpenStates.green"
+           on-close="keyboardOpenStates.green=false"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
+      <div id="green-cells">
+        <div ng-repeat="ch in greens track by $index"
+             class="wordle-cell"
+             ng-class="{'highlight': isTakingInput('green',$index)}"
+             data-posn="{{$index}}"
+             ng-class="{'green-cell': isValidChar(ch), 'empty-cell': !isValidChar(ch)}"
+             ng-click="getAndSetGreen($index)"
+             >{{ isValidChar(ch) ? ch : 'x' }}</div>
+      </div>
+    
+      <h3>yellows (letters in wrong positions)</h3>
+      <table id="yellow-rows">
+        <tr ng-repeat="yellowRow in yellows track by $index"
+            class="yellow-posn">
+          <td>position {{$index+1}}: </td>
+          <td>
+            <input class="yellow-input"
+                   ng-change="onYellowChange($index)"
+                   ng-model="yellowInputs[$index]"
+                   data-posn="${index}" 
+                   placeholder="a,b,..." />
+          </td>
+          <td class="yellow-cells">
+            <span ng-repeat="val in yellowRow"
+                  class="wordle-cell yellow-cell"
+                  >{{val}}</span>
+          </td>
+        </tr>
+      </table>
+    
+      <div>
+        <button id="go"
+                ng-click="search()"
+                ng-disabled="warnings.length > 0"
+                >search</button>
+      </div>
+  
+      <div ng-repeat="msg in warnings"
+           class="warning"
+           >{{msg}}</div>
+
+    </div>
+    <div class="column">
+
+      <div>ipa input: {{ipaInput}}</div>
+      <div>keyboard open states: {{keyboardOpenStates}}</div>
+      <div>cell taking input: {{cellTakingInput}}</div>
+
+      <div id="output"
+           class="monospace"
+           ng-class="{'hidden': !hasRunSearch}"
+           >
+        <div class="footnote">
+          {{output.length}} matches found
+        </div>
+        <div ng-repeat="s in output">{{s}}</div>
+      </div>
+
+    </div>
+  
+  </body>
+</html>
