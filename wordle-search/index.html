@@ -43,7 +43,7 @@
              class="wordle-cell"
              data-posn="{{$index}}"
              ng-class="{'green-cell': isValidChar(ch), 'empty-cell': !isValidChar(ch)}"
-             ng-click="setGreen($index)"
+             ng-click="getAndSetGreen($index)"
              >{{ isValidChar(ch) ? ch : 'x' }}</div>
       </div>
     
