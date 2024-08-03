@@ -1,5 +1,5 @@
 export function makeWordleSearchApp(
-  appName, ctrlName, dataSource, charSet, makeSearchRegex, scopeAddons,
+  appName, ctrlName, dataSource, charSet, wordSearch, scopeAddons,
 ) {
   /* factory function to set up an angular app for wordle search
    * @param {string} appName - the `ng-app` value in HTML template
@@ -7,8 +7,8 @@ export function makeWordleSearchApp(
    * @param {string} dataSource - path to JSON file mapping word lengths to
    *   lists of words
    * @param {[string]} charSet - list of accepted characters
-   * @param {function} makeSearchRegex() - returns a RegExp instance matching 
-   *   the search parameters. Can access $scope as `this`.
+   * @param {function} wordSearch() - returns a list of words matching the 
+   *   current search parameters. Can access $scope as `this`.
    * @param {{string:*}|undefined} otherScopeAddons - arbitrary other params
    *   to be attached to $scope. Any functions can access $scope as `this`.
    * @returns {object} - an angular app
@@ -17,41 +17,10 @@ export function makeWordleSearchApp(
   let myCtrl = myApp.controller(
     ctrlName,
     wordleSearchControllerFactory(
-      dataSource, makeSearchRegex, charSet, scopeAddons ?? {}),
+      dataSource, wordSearch, charSet, scopeAddons ?? {}),
   );
   return myApp;
 }
-
-makeWordleSearchApp(
-  'wordleSearchApp',
-  'WordleSearchCtrl', 
-  './wordnik_by_len.json',
-  'abcdefghijklmnopqrstuvwxyz'.split(''),
-  function makeSearchRegex() {
-    // get all negations for each position
-    let negations = this.yellows.map(
-      (yellowRow) => yellowRow.concat(this.greys));
-    // build the regex
-    var regStr = "";
-    for (var i=0; i<this.wordLen; i++) {
-      // if a green char exists, just set it at this position and skip the rest
-      if (this.isValidChar(this.greens[i])) {
-        regStr += this.greens[i];
-        continue;
-      }
-      // otherwise, use the negations
-      regStr += `[^${negations[i].join('')}]`;
-    }
-    regStr = `,${regStr},`;
-    return new RegExp(regStr, 'g');
-  },
-  { // other scope addons
-    // prompt for a green character and set it
-    getAndSetGreen: function(posn) {
-      this.setGreen(posn, window.prompt("set a character").trim() ?? '');
-    },
-  },
-);
 
 // decorate a function($scope) controller with additional parameters
 function wordleSearchControllerFactory(...params) {
@@ -62,7 +31,7 @@ function wordleSearchControllerFactory(...params) {
 
 // core logic for angular controller function with addon parameters
 function wordleSearchControllerSetup(
-  $scope, dataSource, makeSearchRegex, charSet, otherScopeAddons,
+  $scope, dataSource, wordSearch, charSet, otherScopeAddons,
 ) {
   const DEFAULT_WORD_LEN = 5;
   function setDefaultValues() {
@@ -75,7 +44,7 @@ function wordleSearchControllerSetup(
     
     // set app parameters on scope
     $scope.dataSource = dataSource;
-    $scope.makeSearchRegex = makeSearchRegex;
+    $scope.wordSearch = wordSearch;
     $scope.charSet = charSet;
     for (const key in (otherScopeAddons ?? {})) {
       $scope[key] = otherScopeAddons[key];
@@ -87,12 +56,7 @@ function wordleSearchControllerSetup(
 
   // run a word search with current inputs
   $scope.search = function() {
-    const re = $scope.makeSearchRegex($scope);
-    $scope.output = (
-      $scope.wordsByLen[$scope.wordLen].match(re)
-      .map((s) => s.replace(/,/g, ''))
-    );
-    console.debug(re, $scope.output);
+    $scope.output = $scope.wordSearch();
   };
 
   // when the grey raw input changes
@@ -183,6 +147,6 @@ function cropOrExtendArray(arr, newLen, defaultVal) {
 }
 
 // shallow flatten an array of arrays.
-function flatten(nestedList) {
+export function flatten(nestedList) {
   return [].concat.apply([], nestedList)
 }
