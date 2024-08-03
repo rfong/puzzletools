@@ -47,8 +47,11 @@ function wordleSearchControllerSetup(
     $scope.wordSearch = wordSearch;
     $scope.charSet = charSet;
     for (const key in (otherScopeAddons ?? {})) {
-      $scope[key] = otherScopeAddons[key];
+      var o = otherScopeAddons[key];
+      if (typeof o == 'function') o = o.bind($scope);
+      $scope[key] = o;
     }
+    console.log("scope from ctrl:", $scope);
 
     // import helpers used in template
     $scope.getChars = getChars;
