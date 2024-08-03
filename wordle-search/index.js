@@ -1,23 +1,33 @@
 import { getEl } from "../helpers.js";
 
-let myApp = angular.module('wordleSearchApp', []);
-myApp.controller('WordleSearchCtrl', function($scope) {
-  function setDefaultValues() {
-    $scope.wordLen = 5;
-    $scope.greys = [];
-    $scope.greens = [];
-    $scope.yellows = [];
-    $scope.yellowInputs = [];
-    $scope.onLenChange();
+export function makeWordleSearchApp(
+  appName, ctrlName, dataSource, charSet, makeSearchRegex,
+) {
+  /* factory function to set up an angular app for wordle search
+   * @param {string} appName - the `ng-app` value in HTML template
+   * @param {string} ctrlName - the `ng-controller` value in template
+   * @param {string} dataSource - path to JSON file mapping word lengths to
+   *   lists of words
+   * @param {[string]} charSet - list of accepted characters
+   * @param {function} makeSearchRegex($scope) - takes a WordleSearchApp's 
+   *   $scope and returns a RegExp instance matching the search parameters
+   * @returns {object} - an angular app
+   */
+  let myApp = angular.module(appName, []);
+  let myCtrl = myApp.controller(
+    ctrlName,
+    wordleSearchControllerFactory(dataSource, makeSearchRegex, charSet),
+  );
+  return myApp;
+}
 
-    // import helpers used in template
-    $scope.getChars = getChars;
-    $scope.isValidChar = isValidChar;
-  }
-
-  // when the 'search' button is clicked
-  $scope.search = function() {
-    $scope.output = ["foo", "bar"];
+makeWordleSearchApp(
+  'wordleSearchApp',
+  'WordleSearchCtrl', 
+  './wordnik_by_len.json',
+  'abcdefghijklmnopqrstuvwxyz'.split(''),
+  // make search regex
+  function($scope) {
     // get all negations for each position
     let negations = $scope.yellows.map(
       (yellowRow) => yellowRow.concat($scope.greys));
@@ -25,7 +35,7 @@ myApp.controller('WordleSearchCtrl', function($scope) {
     var regStr = "";
     for (var i=0; i<$scope.wordLen; i++) {
       // if a green char exists, just set it at this position and skip the rest
-      if (isValidChar($scope.greens[i])) {
+      if ($scope.isValidChar($scope.greens[i])) {
         regStr += $scope.greens[i];
         continue;
       }
@@ -33,12 +43,46 @@ myApp.controller('WordleSearchCtrl', function($scope) {
       regStr += `[^${negations[i].join('')}]`;
     }
     regStr = `,${regStr},`;
-    const re = new RegExp(regStr, 'g');
+    return new RegExp(regStr, 'g');
+  },
+);
+
+// decorate a function($scope) controller with other parameters
+function wordleSearchControllerFactory(...params) {
+  return ($scope) => {
+    return wordleSearchControllerSetup.apply(null, [$scope].concat(params));
+  };
+}
+
+// angular controller function with additional parameters
+function wordleSearchControllerSetup(
+  $scope, dataSource, makeSearchRegex, charSet,
+) {
+  function setDefaultValues() {
+    $scope.wordLen = 5;
+    $scope.greys = [];
+    $scope.greens = [];
+    $scope.yellows = [];
+    $scope.yellowInputs = [];
+    $scope.onLenChange();
+    
+    // set app parameters on scope
+    $scope.dataSource = dataSource;
+    $scope.makeSearchRegex = makeSearchRegex;
+    $scope.charSet = charSet;
+
+    // import helpers used in template
+    $scope.getChars = getChars;
+  }
+
+  // when the 'search' button is clicked
+  $scope.search = function() {
+    const re = $scope.makeSearchRegex($scope);
     $scope.output = (
       $scope.wordsByLen[$scope.wordLen].match(re)
       .map((s) => s.replace(/,/g, ''))
     );
-    console.debug(regStr, $scope.output);
+    console.debug(re, $scope.output);
   };
 
   // when the grey raw input changes
@@ -91,9 +135,14 @@ myApp.controller('WordleSearchCtrl', function($scope) {
     $scope.warnings = warnings;
   }
 
+  // check if char is valid to put in box
+  $scope.isValidChar = function(c) {
+    return (c && c.length == 1 && $scope.charSet.includes(c));
+  }
+
   // setup
   setDefaultValues();
-  fetch("./wordnik_by_len.json")
+  fetch($scope.dataSource)
   .then((response) => response.json())
   .then((words) => {
     $scope.$apply(() => {
@@ -104,7 +153,7 @@ myApp.controller('WordleSearchCtrl', function($scope) {
       $scope.wordLen = $scope.wordLens[4]; // set default val to 5
     });
   });
-});
+}
 
 // given a string of comma-delimited characters, split and normalize them
 function getChars(s) {
@@ -123,12 +172,6 @@ function cropOrExtendArray(arr, newLen, defaultVal) {
   }
   // Otherwise, extend and pad with default values.
   return arr.concat(Array(newLen-arr.length).fill(defaultVal));
-}
-
-// check if char is valid to put in box
-const alphabet = 'abcdefghijklmnopqrstuvwxyz';
-function isValidChar (c) {
-  return (c && c.length == 1 && alphabet.includes(c));
 }
 
 // shallow flatten an array of arrays.
