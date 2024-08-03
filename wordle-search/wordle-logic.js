@@ -51,7 +51,6 @@ function wordleSearchControllerSetup(
       if (typeof o == 'function') o = o.bind($scope);
       $scope[key] = o;
     }
-    console.log("scope from ctrl:", $scope);
 
     // import helpers used in template
     $scope.getChars = getChars;
@@ -75,10 +74,10 @@ function wordleSearchControllerSetup(
     $scope.checkInputs();
   };
 
-  // set a green character, 0-indexed
-  $scope.setGreen = function(posn, c) {
-    $scope.greens[posn] = c;
-    console.debug(`set ${c} at posn ${posn}`);
+  // set a green character
+  $scope.setGreen = function(index, c) {
+    $scope.greens[index] = c;
+    console.debug(`set ${c} at green index=${index}`);
     $scope.checkInputs();
   }
   

@@ -4,10 +4,6 @@
   margin-right: 3em;
 }
 
-#go {
-  margin-bottom: 2em;
-}
-
 .wordle-cell {
   display: inline-block;
   width: 50px;

@@ -1,13 +1,11 @@
-#keyboard {
-  font-family: sans-serif;
-}
-
 .keyboard {
   width: 400px;
   margin: 1em 0;
   padding: 0.75em 1em;
   background-color: #eee;
+  font-family: sans-serif;
 }
+
 .keyboard-section {
   width: 450px;
 }
@@ -24,7 +22,6 @@
 .wordle-cell {
   cursor: pointer;
 }
-
 .wordle-cell.highlight {
   border: 1px solid #f00;
 }

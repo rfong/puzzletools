@@ -41,24 +41,73 @@ let myApp = makeWordleSearchApp(
     );
   },
   { // other scope addons
-
-    // prompt for a green character and set it
-    getAndSetGreen: function(posn) {
-      this.keyboardOpenStates.green = true;
-      this.setCellTakingInput('green', posn, undefined);
-      console.log(this.cellTakingInput);
-      //this.setGreen(posn, window.prompt("set a character").trim() ?? '');
-    },
+    // constants
     phonemes: phonemes,
     allPhonemes: allPhonemes,
 
+    // state
     keyboardOpenStates: {},
-    cellTakingInput: {},
+    currCell: {},
+
+    // set output of ipa keyboard on the scope
+    ipaKeypress: function(ph) {
+      console.log("executing fn from parent scope");
+      this.ipaInput = ph;
+      console.log("got phoneme:", this.ipaInput);
+      // Tell the currently highlighted cell about the input
+      switch(this.currCell.color) {
+        case "green":
+          this.setGreen(this.currCell.index, ph);
+          break;
+        case "grey":
+          this.setGrey(this.currCell.index, ph);
+          break;
+        case "yellow":
+          this.setYellow(this.currCell.index, this.currCell.subIndex, ph);
+          break;
+      }
+      // Clear highlighted cell
+      this.currCell = {};
+    },
+
+    // prompt for a green character
+    promptGreen: function(index) {
+      // note which cell is currently being highlighted
+      this.setCellTakingInput('green', index, undefined);
+    },
+
+    // prompt for a grey character
+    promptGrey: function(index) {
+      // note which cell is currently being highlighted
+      this.setCellTakingInput('grey', index, undefined);
+    },
+    // set a grey character
+    setGrey: function(index, c) {
+      if (this.isValidChar(c)) {
+        this.greys[index] = c;
+        console.debug(`set ${c} at grey index=${index}`);
+      } else {
+        // remove if invalid/empty
+        this.greys.splice(index, 1);
+      }
+      this.checkInputs();
+    },
+
+    // prompt for a yellow character
+    promptYellow: function(index, subIndex) {
+      // note which cell is currently being highlighted
+      this.setCellTakingInput('yellow', index, subIndex);
+    },
+    // set a yellow character
+    setYellow: function(index, subIndex, c) {
+      this.yellows[index][subIndex] = c;
+      console.debug(`set ${c} at yellow (${index},${subIndex})`);
+      this.checkInputs();
+    },
 
     setCellTakingInput: function(color, index, subIndex) {
-      console.log("scope from addon fn:", this);
       // Specifies a unique cell currently accepting keyboard input.
-      this.cellTakingInput = {
+      this.currCell = {
         color: color,
         index: index,
         subIndex: subIndex,
@@ -66,22 +115,13 @@ let myApp = makeWordleSearchApp(
     },
     isTakingInput: function(color, index, subIndex) {
       // Returns true if this cell is currently taking input.
-      console.log(this.cellTakingInput);
       return (
-        color===this.cellTakingInput.color &&
-        index===this.cellTakingInput.index &&
-        (!subIndex || subIndex===this.cellTakingInput.subIndex)
+        color===this.currCell.color &&
+        index===this.currCell.index &&
+        (!subIndex || subIndex===this.currCell.subIndex)
       );
     },
 
-    ipaKeypress: function(ph) {
-      // Set output of ipa keyboard on the scope.
-      console.log("executing fn from parent scope");
-      this.ipaInput = ph;
-      console.log("got phoneme:", this.ipaInput);
-      // Clear highlighted cell
-      this.cellTakingInput = {};
-    },
   },
 );
 
@@ -101,6 +141,7 @@ myApp.directive('ipaKeyboard', function() {
     template: function(element, attrs) {
       return `
         <div class="keyboard">
+          <button ng-click="onInput('')">clear</button>
           <div class="keyboard-section"
                ng-repeat="(category,sublist) in phonemes"
           >

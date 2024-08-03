@@ -4,7 +4,7 @@
     <script type="module" src="../../lib/angular.min.js"></script>
     <script type="module" src="index.js"></script>
     <link rel="stylesheet" href="../../style.css" />
-    <link rel="stylesheet" href="../index.css" />
+    <link rel="stylesheet" href="../wordle.css" />
     <link rel="stylesheet" href="index.css" />
   </head>
   <body>
@@ -17,13 +17,6 @@
     <div class="column">
 
       <div>
-        click for ipa input
-        <div class="wordle-cell ipa-input"
-             ng-click="openIpaKeyboard()"
-             >+</div>
-      </div>
-
-      <div>
         <label for="lengthSelect">word length</label>
         <select id="lengthSelect"
                 ng-model="wordLen"
@@ -33,33 +26,43 @@
       </div>
     
       <h3>greys (disallowed letters)</h3>
-      <p>
-        <input id="disallowed"
-               placeholder="a,b,c,..." 
-               ng-model="disallowed"
-               ng-change="onGreyChange()" />
-      </p>
       <div id="grey-cells">
         <div ng-repeat="ch in greys"
-             class="wordle-cell grey-cell"
-             >{{ch}}</div>
+             class="wordle-cell"
+             ng-class="{
+               'grey-cell': isValidChar(ch),
+               'empty-cell': !isValidChar(ch),
+               'highlight': isTakingInput('grey',$index),
+             }"
+             ng-click="promptGrey($index)"
+             >{{ isValidChar(ch) ? ch : "x" }}</div>
+        <div class="wordle-cell"
+             ng-click="greys.push(''); promptGrey(greys.length-1)"
+             >+</div>
       </div>
-    
-      <h3>greens (correct letters)</h3>
       <div ipa-keyboard
-           ng-show="keyboardOpenStates.green"
-           on-close="keyboardOpenStates.green=false"
+           ng-show="currCell.color=='grey'"
            phonemes="phonemes"
            ipa-keypress="ipaKeypress(ph)"
            ></div>
+    
+      <h3>greens (correct letters)</h3>
       <div id="green-cells">
         <div ng-repeat="ch in greens track by $index"
              class="wordle-cell"
-             ng-class="{'highlight': isTakingInput('green',$index)}"
              data-posn="{{$index}}"
-             ng-class="{'green-cell': isValidChar(ch), 'empty-cell': !isValidChar(ch)}"
-             ng-click="getAndSetGreen($index)"
+             ng-class="{
+               'green-cell': isValidChar(ch),
+               'empty-cell': !isValidChar(ch),
+               'highlight': isTakingInput('green',$index),
+             }"
+             ng-click="promptGreen($index)"
              >{{ isValidChar(ch) ? ch : 'x' }}</div>
+      <div ipa-keyboard
+           ng-show="currCell.color=='green'"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
       </div>
     
       <h3>yellows (letters in wrong positions)</h3>
@@ -98,7 +101,7 @@
 
       <div>ipa input: {{ipaInput}}</div>
       <div>keyboard open states: {{keyboardOpenStates}}</div>
-      <div>cell taking input: {{cellTakingInput}}</div>
+      <div>cell taking input: {{currCell}}</div>
 
       <div id="output"
            class="monospace"
