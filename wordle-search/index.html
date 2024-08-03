@@ -81,9 +81,11 @@
     </div>
     <div class="column">
 
-      <div id="output" class="monospace">
-        <div ng-if="output.length"
-             class="footnote">
+      <div id="output"
+           class="monospace"
+           ng-class="{'hidden': !hasRunSearch}"
+           >
+        <div class="footnote">
           {{output.length}} matches found
         </div>
         <div ng-repeat="s in output">{{s}}</div>

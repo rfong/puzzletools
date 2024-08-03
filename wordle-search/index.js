@@ -9,11 +9,10 @@ makeWordleSearchApp(
     // get all negations for each position
     let negations = this.yellows.map(
       (yellowRow) => yellowRow.concat(this.greys));
-    // additional required characters
+    // additional required characters; use lookahead
     let requiredChars = Array.from(new Set(flatten(this.yellows)));
-    console.log(requiredChars);
-    // build the regex
-    var regStr = "";
+    var regStr = requiredChars.map((c) => `(?=\\w*${c}\\w*)`).join('');
+    // build the rest of the regex
     for (var i=0; i<this.wordLen; i++) {
       // if a green char exists, just set it at this position and skip the rest
       if (this.isValidChar(this.greens[i])) {
@@ -23,10 +22,10 @@ makeWordleSearchApp(
       // otherwise, use the negations
       regStr += `[^${negations[i].join('')}]`;
     }
-    regStr = `,${regStr},`;
+    regStr = ` ${regStr} `;
     const re = new RegExp(regStr, 'g');
     return (
-      $scope.wordsByLen[$scope.wordLen].match(re)
+      (this.wordsByLen[this.wordLen].match(re) ?? [])
       .map((s) => s.replace(/,/g, ''))
     );
   },

@@ -56,6 +56,7 @@ function wordleSearchControllerSetup(
 
   // run a word search with current inputs
   $scope.search = function() {
+    $scope.hasRunSearch = true;
     $scope.output = $scope.wordSearch();
   };
 
