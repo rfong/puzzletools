@@ -1,8 +1,9 @@
 '''
-Simple string trie for large wordbanks.
-Nodes do not know their parents; we are only traversing downward.
-Assume tokens may be multicharacter strings; all "words" will be assumed to be 
-lists of tokens, rather than strings.
+Simple trie for looking up string inclusion in large wordbanks.
+- No additional values stored at leaves; only the string tokens themselves.
+- Nodes do not know their parents; we are only traversing downward.
+- Assume tokens may be multicharacter strings; all "words" will be assumed to 
+  be lists of tokens, rather than strings.
 '''
 
 def make_trie(word_list):
