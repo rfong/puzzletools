@@ -30,15 +30,15 @@
     
       <h3>greys (disallowed letters)</h3>
       <div id="grey-cells">
-        <div ng-repeat="ch in greys"
+        <div ng-repeat="ph in greys"
              class="wordle-cell"
              ng-class="{
-               'grey-cell': isValidChar(ch),
-               'empty-cell': !isValidChar(ch),
+               'grey-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
                'highlight': isTakingInput('grey',$index),
              }"
              ng-click="promptGrey($index)"
-             >{{ isValidChar(ch) ? ch : "x" }}</div>
+             >{{ isValidChar(ph) ? ph : "x" }}</div>
         <div class="wordle-cell"
              ng-click="greys.push(''); promptGrey(greys.length-1)"
              >+</div>
@@ -51,16 +51,16 @@
     
       <h3>greens (correct letters)</h3>
       <div id="green-cells">
-        <div ng-repeat="ch in greens track by $index"
+        <div ng-repeat="ph in greens track by $index"
              class="wordle-cell"
              data-posn="{{$index}}"
              ng-class="{
-               'green-cell': isValidChar(ch),
-               'empty-cell': !isValidChar(ch),
+               'green-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
                'highlight': isTakingInput('green',$index),
              }"
              ng-click="promptGreen($index)"
-             >{{ isValidChar(ch) ? ch : 'x' }}</div>
+             >{{ isValidChar(ph) ? ph : 'x' }}</div>
       <div ipa-keyboard
            ng-show="currCell.color=='green'"
            phonemes="phonemes"

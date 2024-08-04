@@ -6,7 +6,6 @@ const phonemes = {
   dipthongs: ['aʊ', 'aɪ', 'eɪ', 'oʊ', 'ɔɪ'],
   consonants: 'bdðʤfghklmnŋprsʃtʧθvwjzʒ'.split(''),
 };
-const allPhonemes = phonemes.monophthongs.concat(phonemes.dipthongs, phonemes.consonants);
 
 let myApp = makeWordleSearchApp(
   'wordleSearchApp',
@@ -43,11 +42,15 @@ let myApp = makeWordleSearchApp(
   { // other scope addons
     // constants
     phonemes: phonemes,
-    allPhonemes: allPhonemes,
     yellows: [['i','d','k'],[],['k'],[],[]],
 
     // initial state
     currCell: {},
+
+    // check if phoneme is valid to put in box
+    isValidChar: function(ph) {
+      return (ph && this.charSet.includes(ph));
+    },
 
     // set output of ipa keyboard on the scope
     ipaKeypress: function(ph) {
@@ -70,22 +73,22 @@ let myApp = makeWordleSearchApp(
       this.currCell = {};
     },
 
-    // prompt for a green character
+    // prompt for a green input
     promptGreen: function(index) {
       // note which cell is currently being highlighted
       this.setCellTakingInput('green', index, undefined);
     },
 
-    // prompt for a grey character
+    // prompt for a grey input
     promptGrey: function(index) {
       // note which cell is currently being highlighted
       this.setCellTakingInput('grey', index, undefined);
     },
-    // set a grey character
-    setGrey: function(index, c) {
-      if (this.isValidChar(c)) {
-        this.greys[index] = c;
-        console.debug(`set ${c} at grey index=${index}`);
+    // set a grey input
+    setGrey: function(index, ph) {
+      if (this.isValidChar(ph)) {
+        this.greys[index] = ph;
+        console.debug(`set ${ph} at grey index=${index}`);
       } else {
         // remove if invalid/empty
         this.greys.splice(index, 1);
@@ -93,17 +96,17 @@ let myApp = makeWordleSearchApp(
       this.checkInputs();
     },
 
-    // prompt for a yellow character
+    // prompt for a yellow input
     promptYellow: function(index, subIndex) {
       console.debug(`prompt yellow (${index},${subIndex})`);
       // note which cell is currently being highlighted
       this.setCellTakingInput('yellow', index, subIndex);
     },
-    // set a yellow character
-    setYellow: function(index, subIndex, c) {
-      if (this.isValidChar(c)) {
-        this.yellows[index][subIndex] = c;
-        console.debug(`set ${c} at yellow (${index},${subIndex})`);
+    // set a yellow input
+    setYellow: function(index, subIndex, ph) {
+      if (this.isValidChar(ph)) {
+        this.yellows[index][subIndex] = ph;
+        console.debug(`set ${ph} at yellow (${index},${subIndex})`);
       } else {
         // remove if invalid/empty
         this.yellows[index].splice(subIndex, 1);
