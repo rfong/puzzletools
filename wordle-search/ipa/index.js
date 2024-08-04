@@ -82,7 +82,7 @@ let myApp = makeWordleSearchApp(
   // ng-controller name
   'WordleSearchCtrl', 
   // word data source
-  './cmu_by_len.json',
+  './cmu_wordnik_by_len.json',
   // valid "characters" (phonemes)
   Object.keys(ipaToCmu),
 
