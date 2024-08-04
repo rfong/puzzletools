@@ -1,3 +1,6 @@
+# bugs
+- [ ] empty yellow cells should disappear when cell focus ends
+
 # cmudict notes
 both homophones and homonyms are present.
 
