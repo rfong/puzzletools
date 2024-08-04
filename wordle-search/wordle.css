@@ -1,0 +1,50 @@
+#go {
+  margin-bottom: 2em;
+}
+
+.column {
+  display: inline-block;
+  vertical-align: text-top;
+  margin-right: 3em;
+}
+
+.wordle-cell {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  line-height: 50px;
+  text-align: center;
+  font-size: 20pt;
+
+  font-weight: bold;
+  font-family: sans-serif;
+  box-sizing: border-box;
+  border: 1px solid #000;
+  border-radius: 2px;
+
+  margin-right: 5px;
+  margin-bottom: 5px;
+}
+
+.empty-cell {
+  color: rgba(0,0,0,0);
+}
+
+.yellow-posn {
+  font-family: monospace;
+  height: 52px;
+}
+
+.yellow-cell {
+  background-color: #FEC802;
+}
+.green-cell {
+  background-color: #509606;
+}
+.grey-cell {
+  background-color: #646464;
+}
+
+.green-cell, .empty-cell {
+  cursor: pointer;
+}

@@ -47,7 +47,9 @@ function wordleSearchControllerSetup(
     $scope.wordSearch = wordSearch;
     $scope.charSet = charSet;
     for (const key in (otherScopeAddons ?? {})) {
-      $scope[key] = otherScopeAddons[key];
+      var o = otherScopeAddons[key];
+      if (typeof o == 'function') o = o.bind($scope);
+      $scope[key] = o;
     }
 
     // import helpers used in template
@@ -72,10 +74,10 @@ function wordleSearchControllerSetup(
     $scope.checkInputs();
   };
 
-  // set a green character, 0-indexed
-  $scope.setGreen = function(posn, c) {
-    $scope.greens[posn] = c;
-    console.debug(`set ${c} at posn ${posn}`);
+  // set a green character
+  $scope.setGreen = function(index, c) {
+    $scope.greens[index] = c;
+    console.debug(`set ${c} at green index=${index}`);
     $scope.checkInputs();
   }
   
@@ -84,6 +86,14 @@ function wordleSearchControllerSetup(
     $scope.greens = cropOrExtendArray($scope.greens, $scope.wordLen, '');
     $scope.yellows = cropOrExtendArray($scope.yellows, $scope.wordLen, []);
     $scope.yellowInputs = cropOrExtendArray($scope.yellowInputs, $scope.wordLen, '');
+  };
+
+  // clear all
+  $scope.clearData = function() {
+    $scope.greens = [];
+    $scope.yellows = [];
+    $scope.yellowInputs = [];
+    $scope.onLenChange();
   };
 
   // check if ok to submit, if not issue warnings
@@ -113,13 +123,17 @@ function wordleSearchControllerSetup(
     return (c && c.length == 1 && $scope.charSet.includes(c));
   }
 
+  $scope.processData = function(data) {
+    $scope.wordsByLen = data;
+  };
+
   // setup
   setDefaultValues();
   fetch($scope.dataSource)
   .then((response) => response.json())
-  .then((words) => {
+  .then((data) => {
     $scope.$apply(() => {
-      $scope.wordsByLen = words;
+      $scope.processData(data);
 
       // weird hack to make select's default value work
       $scope.wordLens = Object.keys($scope.wordsByLen);

@@ -1,0 +1,127 @@
+<html ng-app="wordleSearchApp"
+      ng-controller="WordleSearchCtrl">
+  <head>
+    <script type="module" src="../../lib/angular.min.js"></script>
+    <script type="module" src="index.js"></script>
+    <link rel="stylesheet" href="../../style.css" />
+    <link rel="stylesheet" href="../wordle.css" />
+    <link rel="stylesheet" href="index.css" />
+  </head>
+  <body>
+
+    <div><a href="../../"><< back</a></div>
+
+    <h1>IPA wordle-search</h1>
+    <p class="footnote" style="max-width: 500px;">
+    limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a> filtered by the <a href="https://github.com/wordnik/wordlist">wordnik dictionary</a>.
+      <br/>
+      - note that dipthongs are counted as a single phoneme for length purposes.
+      <br/>
+      - cmudict does not differentiate between {{phonemes.monophthongs[6]}} and {{phonemes.monophthongs[7]}}.
+    </p>
+
+    <div class="column">
+
+      <div>
+        <label for="lengthSelect">word length</label>
+        <select id="lengthSelect"
+                ng-model="wordLen"
+                ng-options="len for len in wordLens"
+                ng-change="onLenChange()"
+                ></select>
+      </div>
+      <div>
+        <button ng-click="clearData()">clear all</button>
+      </div>
+    
+      <h3>greys (not used)</h3>
+      <div id="grey-cells">
+        <div ng-repeat="ph in greys"
+             class="wordle-cell"
+             ng-class="{
+               'grey-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
+               'highlight': isTakingInput(GREY,$index),
+             }"
+             ng-click="promptCell(GREY, $index)"
+             >{{ isValidChar(ph) ? ph : "x" }}</div>
+        <div class="wordle-cell"
+             ng-click="greys.push(''); promptCell(GREY, greys.length-1)"
+             >+</div>
+      </div>
+      <div ipa-keyboard
+           ng-show="currCell.color==GREY"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
+    
+      <h3>greens (correct)</h3>
+      <div id="green-cells">
+        <div ng-repeat="ph in greens track by $index"
+             class="wordle-cell"
+             data-posn="{{$index}}"
+             ng-class="{
+               'green-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
+               'highlight': isTakingInput(GREEN,$index),
+             }"
+             ng-click="promptCell(GREEN, $index)"
+             >{{ isValidChar(ph) ? ph : 'x' }}</div>
+      <div ipa-keyboard
+           ng-show="currCell.color==GREEN"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
+      </div>
+    
+      <h3>yellows (wrong positions)</h3>
+      <div class="yellow-column"
+           ng-repeat="subYellows in yellows track by $index"
+           ng-init="yellowIndex=$index">
+        <div class="wordle-cell"
+             ng-click="addAndPromptYellow(yellowIndex)"
+             >+</div>
+        <div ng-repeat="ph in subYellows track by $index"
+             class="wordle-cell yellow-cell"
+             ng-class="{
+               'yellow-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
+               'highlight': isTakingInput(YELLOW,yellowIndex,$index),
+             }"
+             ng-click="promptCell(YELLOW, yellowIndex, $index)"
+             >{{ isValidChar(ph) ? ph : "x" }}{{$subIndex}}</div>
+      </div>
+      <div ipa-keyboard
+           ng-show="currCell.color==YELLOW"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
+
+      <div>
+        <button id="go"
+                ng-click="search()"
+                ng-disabled="warnings.length > 0"
+                >search</button>
+      </div>
+  
+      <div ng-repeat="msg in warnings"
+           class="warning"
+           >{{msg}}</div>
+
+    </div>
+    <div class="column">
+
+      <div id="output"
+           class="monospace"
+           ng-class="{'hidden': !hasRunSearch}"
+           >
+        <div class="footnote">
+          {{output.length}} matches found
+        </div>
+        <div ng-repeat="s in output track by $index">{{s}}</div>
+      </div>
+
+    </div>
+  
+  </body>
+</html>
