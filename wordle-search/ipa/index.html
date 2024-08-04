@@ -12,7 +12,11 @@
     <div><a href="../../"><< back</a></div>
 
     <h1>IPA wordle-search</h1>
-    <p class="footnote">limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a></p>
+    <p class="footnote" style="max-width: 500px;">
+      limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a>, which contains some questionable not-in-the-dictionary words.
+      <br/>
+      note that dipthongs are counted as a single phoneme for length purposes.
+    </p>
 
     <div class="column">
 
@@ -116,7 +120,7 @@
         <div class="footnote">
           {{output.length}} matches found
         </div>
-        <div ng-repeat="s in output">{{s}}</div>
+        <div ng-repeat="s in output track by $index">{{s}}</div>
       </div>
 
     </div>

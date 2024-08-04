@@ -60,6 +60,7 @@ function wordleSearchControllerSetup(
   $scope.search = function() {
     $scope.hasRunSearch = true;
     $scope.output = $scope.wordSearch();
+    console.log($scope.output);
   };
 
   // when the grey raw input changes
@@ -123,18 +124,22 @@ function wordleSearchControllerSetup(
     return (c && c.length == 1 && $scope.charSet.includes(c));
   }
 
+  $scope.processData = function(data) {
+    $scope.wordsByLen = data;
+  };
+
   // setup
   setDefaultValues();
   fetch($scope.dataSource)
   .then((response) => response.json())
-  .then((words) => {
+  .then((data) => {
     $scope.$apply(() => {
-      $scope.wordsByLen = words;
-
-      // weird hack to make select's default value work
-      $scope.wordLens = Object.keys($scope.wordsByLen);
-      $scope.wordLen = $scope.wordLens[DEFAULT_WORD_LEN - 1];
+      $scope.processData(data);
     });
+
+    // weird hack to make select's default value work
+    $scope.wordLens = Object.keys($scope.wordsByLen);
+    $scope.wordLen = $scope.wordLens[DEFAULT_WORD_LEN - 1];
   });
 }
 

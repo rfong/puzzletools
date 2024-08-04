@@ -1,48 +1,130 @@
 import { getEl } from '../../helpers.js';
 import { makeWordleSearchApp, flatten } from '../wordle-logic.js';
 
+// phonemes by category
 const phonemes = {
   monophthongs: 'ɑæəʌɔɛɝɚɪiʊu'.split(''),
   dipthongs: ['aʊ', 'aɪ', 'eɪ', 'oʊ', 'ɔɪ'],
-  consonants: 'bdðʤfghklmnŋprsʃtʧθvwjzʒ'.split(''),
+  consonants: 'bʧdðfghʤklmnŋprsʃtθvwjzʒ'.split(''),
 };
 
+// word delimiter used in the json data source
+const ipaDelim = ',';
+
+// map IPA chars to CMU designations
+const ipaToCmu = {
+  "ɑ": "AA",
+  "æ": "AE",
+  "ə": "AH0",
+  "ʌ": "AH",
+  "ɔ": "AO",
+  "aʊ": "AW",
+  "aɪ": "AY",
+  "ɛ": "EH",
+  "ɝ": "ER",
+  "ɚ": "ER",
+  "eɪ": "EY",
+  "ɪ": "IH",
+  "i": "IY",
+  "oʊ": "OW",
+  "ɔɪ": "OY",
+  "ʊ": "UH",
+  "u": "UW",
+
+  "b": "B",
+  "ʧ": "CH",
+  "d": "D",
+  "ð": "DH",
+  "f": "F",
+  "g": "G",
+  "h": "HH",
+  "ʤ": "JH",
+  "k": "K",
+  "l": "L",
+  "m": "M",
+  "n": "N",
+  "ŋ": "NG",
+  "p": "P",
+  "r": "R",
+  "s": "S",
+  "ʃ": "SH",
+  "t": "T",
+  "θ": "TH",
+  "v": "V",
+  "w": "W",
+  "j": "Y",
+  "z": "Z",
+  "ʒ": "ZH",
+};
+
+// map cmu base chars back to IPA -- note that we will also have to parse
+// out the stress annotations
+const cmuToIpaBase = Object.fromEntries(
+  Object.entries(ipaToCmu)     // convert to nested list of entries
+  .map((tup)=>[tup[1],tup[0]]) // reverse order
+);
+
+// convert a cmu phoneme back to IPA by either looking in the map or stripping 
+// the stress first (some stressed Arpabet phonemes are in the map)
+function cmuToIpa(cmuPh) {
+  return cmuToIpaBase[cmuPh] ?? cmuToIpaBase[cmuPh.replace(/[0-9]/, '')];
+}
+
+function ipaToCmuPattern(ph) {
+  // given an IPA phoneme, map it to the equivalent CMU dict specification
+  return ipaToCmu[ph] + (phonemes.consonants.includes(ph)? '' : `[012]?`);
+}
+
 let myApp = makeWordleSearchApp(
+  // ng-app name
   'wordleSearchApp',
+  // ng-controller name
   'WordleSearchCtrl', 
-  '../wordnik_by_len.json',
-  // monophthongs
-  'ɑæəʌɔɛɝɚɪiʊubdðʤfghklmnŋprsʃtʧθvwjzʒ'.split('')
-  // dipthongs
-    .concat(['aʊ', 'aɪ', 'eɪ', 'oʊ', 'ɔɪ']),
+  // word data source
+  './ipa_by_len.json',
+
+  // valid "characters" (phonemes)
+  Object.keys(ipaToCmu),
+  // word search function, return list of results to display
   function wordSearch() {
-    // get all negations for each position
-    let negations = this.yellows.map(
-      (yellowRow) => yellowRow.concat(this.greys));
-    // additional required characters; use lookahead
+    // required yellow IPA; use lookahead
     let requiredChars = Array.from(new Set(flatten(this.yellows)));
-    var regStr = requiredChars.map((c) => `(?=\\w*${c}\\w*)`).join('');
+    var regStr = requiredChars.map((ph) => `(?=${ipaDelim}${ipaToCmuPattern(ph)}${ipaDelim})`).join('');
     // build the rest of the regex
+    let negations = this.yellows.map(
+      (yellowRow) => yellowRow.concat(this.greys).map((ph) => ipaToCmuPattern(ph)));
+    let rePieces = [];
     for (var i=0; i<this.wordLen; i++) {
       // if a green char exists, just set it at this position and skip the rest
       if (this.isValidChar(this.greens[i])) {
-        regStr += this.greens[i];
-        continue;
-      }
+        rePieces[i] = ipaToCmuPattern(this.greens[i]);
       // otherwise, use the negations
-      regStr += `[^${negations[i].join('')}]`;
+      } else if (negations) {
+        rePieces[i] = `[\\w^${negations[i].join('')}]+`;
+      // otherwise, wildcard
+      } else {
+        rePieces[i] = '\w';
+      }
     }
-    regStr = ` ${regStr} `;
+    regStr += ipaDelim + rePieces.join(' ') + ipaDelim;
     const re = new RegExp(regStr, 'g');
+    console.log("regex:", re);
     return (
+      // get regex matches
       (this.wordsByLen[this.wordLen].match(re) ?? [])
-      .map((s) => s.replace(/,/g, ''))
+      .map((s) => {
+        // remove word delimiters
+        s = s.replace(new RegExp(ipaDelim, 'g'), '')
+        // map each cmu phoneme back to ipa
+        return s.split(' ').map((ph) => cmuToIpa(ph)).join('');
+      })
     );
   },
   { // other scope addons
     // constants
     phonemes: phonemes,
-    yellows: [['i','d','k'],[],['k'],[],[]],
+    // TESTING ONLY
+    greens: ['s', '', 'n', 'd', ''],
 
     // initial state
     currCell: {},
@@ -50,6 +132,12 @@ let myApp = makeWordleSearchApp(
     // check if phoneme is valid to put in box
     isValidChar: function(ph) {
       return (ph && this.charSet.includes(ph));
+    },
+
+    // process json data
+    processData: function(data) {
+      this.wordsByLen = data.ipa_by_len;
+      this.ipaToSpelling = data.ipa_to_spelling;
     },
 
     // set output of ipa keyboard on the scope
