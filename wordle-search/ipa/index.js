@@ -145,9 +145,8 @@ let myApp = makeWordleSearchApp(
 
     // set output of ipa keyboard on the scope
     ipaKeypress: function(ph) {
-      console.log("executing fn from parent scope");
       this.ipaInput = ph;
-      console.log("got phoneme:", this.ipaInput);
+      console.debug("got phoneme:", this.ipaInput);
       // Tell the currently highlighted cell about the input
       switch(this.currCell.color) {
         case "green":

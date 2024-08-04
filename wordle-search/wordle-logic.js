@@ -60,7 +60,6 @@ function wordleSearchControllerSetup(
   $scope.search = function() {
     $scope.hasRunSearch = true;
     $scope.output = $scope.wordSearch();
-    console.log($scope.output);
   };
 
   // when the grey raw input changes
