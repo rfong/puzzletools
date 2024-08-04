@@ -34,7 +34,7 @@
         <button ng-click="clearData()">clear all</button>
       </div>
     
-      <h3>greys (disallowed letters)</h3>
+      <h3>greys (not used)</h3>
       <div id="grey-cells">
         <div ng-repeat="ph in greys"
              class="wordle-cell"
@@ -55,7 +55,7 @@
            ipa-keypress="ipaKeypress(ph)"
            ></div>
     
-      <h3>greens (correct letters)</h3>
+      <h3>greens (correct)</h3>
       <div id="green-cells">
         <div ng-repeat="ph in greens track by $index"
              class="wordle-cell"
@@ -74,7 +74,7 @@
            ></div>
       </div>
     
-      <h3>yellows (letters in wrong positions)</h3>
+      <h3>yellows (wrong positions)</h3>
       <div class="yellow-column"
            ng-repeat="subYellows in yellows track by $index"
            ng-init="yellowIndex=$index">
