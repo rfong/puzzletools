@@ -71,11 +71,6 @@ function cmuToIpa(cmuPh) {
   return cmuToIpaBase[cmuPh] ?? cmuToIpaBase[cmuPh.replace(/[0-9]/, '')];
 }
 
-function ipaToCmuPattern(ph) {
-  // given an IPA phoneme, map it to the equivalent CMU dict specification
-  return ipaToCmu[ph] + (phonemes.consonants.includes(ph)? '' : `[012]?`);
-}
-
 let myApp = makeWordleSearchApp(
   // ng-app name
   'wordleSearchApp',
@@ -90,21 +85,26 @@ let myApp = makeWordleSearchApp(
   function wordSearch() {
     // required yellow IPA; use lookahead
     let requiredChars = Array.from(new Set(flatten(this.yellows)));
-    var regStr = requiredChars.map((ph) => `(?=${ipaDelim}${ipaToCmuPattern(ph)}${ipaDelim})`).join('');
+    var regStr = requiredChars.map((ph) => `(?=${ipaDelim}${ipaToCmu[ph]}${ipaDelim})`).join('');
     // build the rest of the regex
     let negations = this.yellows.map(
-      (yellowRow) => yellowRow.concat(this.greys).map((ph) => ipaToCmuPattern(ph)));
+      (yellowRow) => yellowRow.concat(this.greys)
+      .map((ph) => {
+        // since some phonemes are dipthongs, use negative lookahead
+        return `(?!${ipaToCmu[ph]})`;
+      })
+    );
     let rePieces = [];
     for (var i=0; i<this.wordLen; i++) {
       // if a green char exists, just set it at this position and skip the rest
       if (this.isValidChar(this.greens[i])) {
-        rePieces[i] = ipaToCmuPattern(this.greens[i]);
+        rePieces[i] = ipaToCmu[this.greens[i]];
       // otherwise, use the negations
       } else if (negations) {
-        rePieces[i] = `[\\w^${negations[i].join('')}]+`;
+        rePieces[i] = `${negations[i].join('')}\\w+`;
       // otherwise, wildcard
       } else {
-        rePieces[i] = '\w';
+        rePieces[i] = '\\w+';
       }
     }
     regStr += ipaDelim + rePieces.join(' ') + ipaDelim;
