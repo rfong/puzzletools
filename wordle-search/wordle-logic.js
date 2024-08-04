@@ -134,11 +134,11 @@ function wordleSearchControllerSetup(
   .then((data) => {
     $scope.$apply(() => {
       $scope.processData(data);
-    });
 
-    // weird hack to make select's default value work
-    $scope.wordLens = Object.keys($scope.wordsByLen);
-    $scope.wordLen = $scope.wordLens[DEFAULT_WORD_LEN - 1];
+      // weird hack to make select's default value work
+      $scope.wordLens = Object.keys($scope.wordsByLen);
+      $scope.wordLen = $scope.wordLens[DEFAULT_WORD_LEN - 1];
+    });
   });
 }
 

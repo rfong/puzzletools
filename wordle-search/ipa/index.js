@@ -5,7 +5,7 @@ import { makeWordleSearchApp, flatten } from '../wordle-logic.js';
 const phonemes = {
   monophthongs: 'ɑæəʌɔɛɝɚɪiʊu'.split(''),
   dipthongs: ['aʊ', 'aɪ', 'eɪ', 'oʊ', 'ɔɪ'],
-  consonants: 'bʧdðfghʤklmnŋprsʃtθvwjzʒ'.split(''),
+  consonants: 'bʧdðfghʤklmnŋpɹsʃtθvwjzʒ'.split(''),
 };
 
 // word delimiter used in the json data source
@@ -45,7 +45,7 @@ const ipaToCmu = {
   "n": "N",
   "ŋ": "NG",
   "p": "P",
-  "r": "R",
+  "ɹ": "R",
   "s": "S",
   "ʃ": "SH",
   "t": "T",
@@ -85,7 +85,23 @@ let myApp = makeWordleSearchApp(
   function wordSearch() {
     // required yellow IPA; use lookahead
     let requiredChars = Array.from(new Set(flatten(this.yellows)));
-    var regStr = requiredChars.map((ph) => `(?=${ipaDelim}${ipaToCmu[ph]}${ipaDelim})`).join('');
+    var regStr = requiredChars.map((ph) => {
+      // lookahead with an OR switching between where in the word the phoneme 
+      // could be located.
+      // TODO in validator: don't allow yellow characters if wordLen=1.
+      let cph = ipaToCmu[ph];
+      return (
+        `(?=` +
+        [ // list of every place the phoneme could be located
+          `${cph} [\\w ]+`,
+          `[\\w ]+ ${cph}`,
+          `[\\w ]+ ${cph} [\\w ]+`,
+        ]
+        // wrap in delimiters and join each option with pipes
+        .map((s) => `${ipaDelim}${s}${ipaDelim}`).join('|')
+        + `)`
+      );
+    }).join('');
     // build the rest of the regex
     let negations = this.yellows.map(
       (yellowRow) => yellowRow.concat(this.greys)
@@ -107,9 +123,10 @@ let myApp = makeWordleSearchApp(
         rePieces[i] = '\\w+';
       }
     }
+    // wrap delimiters around pieces
     regStr += ipaDelim + rePieces.join(' ') + ipaDelim;
     const re = new RegExp(regStr, 'g');
-    console.log("regex:", re);
+    console.debug("regex:", re);
     return (
       // get regex matches
       (this.wordsByLen[this.wordLen].match(re) ?? [])
@@ -118,16 +135,14 @@ let myApp = makeWordleSearchApp(
         let cmuStr = s.replace(new RegExp(ipaDelim, 'g'), '')
         // map each cmu phoneme back to ipa
         let ipaStr = cmuStr.split(' ').map((ph) => cmuToIpa(ph)).join('');
-        console.log(cmuStr, ipaStr);
         return `/${ipaStr}/ - ` + (this.cmuToSpelling[cmuStr] ?? []).join(', ');
       })
     );
   },
   { // other scope addons
+
     // constants
     phonemes: phonemes,
-    // TESTING ONLY
-    greens: ['p', '', 'n', 'd', ''],
 
     // initial state
     currCell: {},
@@ -191,6 +206,13 @@ let myApp = makeWordleSearchApp(
       console.debug(`prompt yellow (${index},${subIndex})`);
       // note which cell is currently being highlighted
       this.setCellTakingInput('yellow', index, subIndex);
+    },
+    addAndPromptYellow: function(index) {
+      // for some reason `this.yellows[index].push(x)` appends `x` to every 
+      // sub-array instead of just the indexed one, but I can only reproduce 
+      // it in this app. using a workaround.
+      this.yellows[index] = this.yellows[index].concat(['']);
+      this.promptYellow(index, this.yellows[index].length-1);
     },
     // set a yellow input
     setYellow: function(index, subIndex, ph) {
