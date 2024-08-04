@@ -11,6 +11,11 @@ const phonemes = {
 // word delimiter used in the json data source
 const ipaDelim = ',';
 
+// enums
+const GREEN = 1,
+      GREY = 2,
+      YELLOW = 3;
+
 // map IPA chars to CMU designations
 const ipaToCmu = {
   "ɑ": "AA",
@@ -78,12 +83,13 @@ let myApp = makeWordleSearchApp(
   'WordleSearchCtrl', 
   // word data source
   './cmu_by_len.json',
-
   // valid "characters" (phonemes)
   Object.keys(ipaToCmu),
+
   // word search function, return list of results to display
   function wordSearch() {
-    // required yellow IPA; use lookahead
+
+    // handle required yellow IPA with lookahead
     let requiredChars = Array.from(new Set(flatten(this.yellows)));
     var regStr = requiredChars.map((ph) => {
       // lookahead with an OR switching between where in the word the phoneme 
@@ -102,7 +108,8 @@ let myApp = makeWordleSearchApp(
         + `)`
       );
     }).join('');
-    // build the rest of the regex
+
+    // generate lookahead for negations (greys and yellows) for each position
     let negations = this.yellows.map(
       (yellowRow) => yellowRow.concat(this.greys)
       .map((ph) => {
@@ -110,6 +117,8 @@ let myApp = makeWordleSearchApp(
         return `(?!${ipaToCmu[ph]})`;
       })
     );
+
+    // build the rest of the regex
     let rePieces = [];
     for (var i=0; i<this.wordLen; i++) {
       // if a green char exists, just set it at this position and skip the rest
@@ -127,15 +136,19 @@ let myApp = makeWordleSearchApp(
     regStr += ipaDelim + rePieces.join(' ') + ipaDelim;
     const re = new RegExp(regStr, 'g');
     console.debug("regex:", re);
+
     return (
-      // get regex matches
+      // run matcher on all eligible words
       (this.wordsByLen[this.wordLen].match(re) ?? [])
       .map((s) => {
         // remove word delimiters
         let cmuStr = s.replace(new RegExp(ipaDelim, 'g'), '')
         // map each cmu phoneme back to ipa
         let ipaStr = cmuStr.split(' ').map((ph) => cmuToIpa(ph)).join('');
-        return `/${ipaStr}/ - ` + (this.cmuToSpelling[cmuStr] ?? []).join(', ');
+        // grab spellings
+        let spellings = (this.cmuToSpelling[cmuStr] ?? []).join(', ');
+        // final render
+        return `/${ipaStr}/ - ` + spellings;
       })
     );
   },
@@ -143,6 +156,9 @@ let myApp = makeWordleSearchApp(
 
     // constants
     phonemes: phonemes,
+    GREEN: GREEN,
+    GREY: GREY,
+    YELLOW: YELLOW,
 
     // initial state
     currCell: {},
@@ -164,13 +180,13 @@ let myApp = makeWordleSearchApp(
       console.debug("got phoneme:", this.ipaInput);
       // Tell the currently highlighted cell about the input
       switch(this.currCell.color) {
-        case "green":
+        case this.GREEN:
           this.setGreen(this.currCell.index, ph);
           break;
-        case "grey":
+        case this.GREY:
           this.setGrey(this.currCell.index, ph);
           break;
-        case "yellow":
+        case this.YELLOW:
           this.setYellow(this.currCell.index, this.currCell.subIndex, ph);
           break;
       }
@@ -178,17 +194,6 @@ let myApp = makeWordleSearchApp(
       this.currCell = {};
     },
 
-    // prompt for a green input
-    promptGreen: function(index) {
-      // note which cell is currently being highlighted
-      this.setCellTakingInput('green', index, undefined);
-    },
-
-    // prompt for a grey input
-    promptGrey: function(index) {
-      // note which cell is currently being highlighted
-      this.setCellTakingInput('grey', index, undefined);
-    },
     // set a grey input
     setGrey: function(index, ph) {
       if (this.isValidChar(ph)) {
@@ -201,19 +206,6 @@ let myApp = makeWordleSearchApp(
       this.checkInputs();
     },
 
-    // prompt for a yellow input
-    promptYellow: function(index, subIndex) {
-      console.debug(`prompt yellow (${index},${subIndex})`);
-      // note which cell is currently being highlighted
-      this.setCellTakingInput('yellow', index, subIndex);
-    },
-    addAndPromptYellow: function(index) {
-      // for some reason `this.yellows[index].push(x)` appends `x` to every 
-      // sub-array instead of just the indexed one, but I can only reproduce 
-      // it in this app. using a workaround.
-      this.yellows[index] = this.yellows[index].concat(['']);
-      this.promptYellow(index, this.yellows[index].length-1);
-    },
     // set a yellow input
     setYellow: function(index, subIndex, ph) {
       if (this.isValidChar(ph)) {
@@ -226,8 +218,18 @@ let myApp = makeWordleSearchApp(
       this.checkInputs();
     },
 
-    setCellTakingInput: function(color, index, subIndex) {
+    // add a new yellow cell and immediately prompt it
+    addAndPromptYellow: function(index) {
+      // for some reason `this.yellows[index].push(x)` appends `x` to every 
+      // sub-array instead of just the indexed one, but I can only reproduce 
+      // it in this app. using a workaround.
+      this.yellows[index] = this.yellows[index].concat(['']);
+      this.promptCell(this.YELLOW, index, this.yellows[index].length-1);
+    },
+
+    promptCell: function(color, index, subIndex) {
       // Specifies a unique cell currently accepting keyboard input.
+      console.debug(`prompt color=${color} (${index},${subIndex})`);
       this.currCell = {
         color: color,
         index: index,

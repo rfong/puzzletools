@@ -39,16 +39,16 @@
              ng-class="{
                'grey-cell': isValidChar(ph),
                'empty-cell': !isValidChar(ph),
-               'highlight': isTakingInput('grey',$index),
+               'highlight': isTakingInput(GREY,$index),
              }"
-             ng-click="promptGrey($index)"
+             ng-click="promptCell(GREY, $index)"
              >{{ isValidChar(ph) ? ph : "x" }}</div>
         <div class="wordle-cell"
-             ng-click="greys.push(''); promptGrey(greys.length-1)"
+             ng-click="greys.push(''); promptCell(GREY, greys.length-1)"
              >+</div>
       </div>
       <div ipa-keyboard
-           ng-show="currCell.color=='grey'"
+           ng-show="currCell.color==GREY"
            phonemes="phonemes"
            ipa-keypress="ipaKeypress(ph)"
            ></div>
@@ -61,12 +61,12 @@
              ng-class="{
                'green-cell': isValidChar(ph),
                'empty-cell': !isValidChar(ph),
-               'highlight': isTakingInput('green',$index),
+               'highlight': isTakingInput(GREEN,$index),
              }"
-             ng-click="promptGreen($index)"
+             ng-click="promptCell(GREEN, $index)"
              >{{ isValidChar(ph) ? ph : 'x' }}</div>
       <div ipa-keyboard
-           ng-show="currCell.color=='green'"
+           ng-show="currCell.color==GREEN"
            phonemes="phonemes"
            ipa-keypress="ipaKeypress(ph)"
            ></div>
@@ -84,13 +84,13 @@
              ng-class="{
                'yellow-cell': isValidChar(ph),
                'empty-cell': !isValidChar(ph),
-               'highlight': isTakingInput('yellow',yellowIndex,$index),
+               'highlight': isTakingInput(YELLOW,yellowIndex,$index),
              }"
-             ng-click="promptYellow(yellowIndex, $index)"
+             ng-click="promptCell(YELLOW, yellowIndex, $index)"
              >{{ isValidChar(ph) ? ph : "x" }}{{$subIndex}}</div>
       </div>
       <div ipa-keyboard
-           ng-show="currCell.color=='yellow'"
+           ng-show="currCell.color==YELLOW"
            phonemes="phonemes"
            ipa-keypress="ipaKeypress(ph)"
            ></div>
