@@ -23,8 +23,7 @@ filesizes:
 - naive json file also with ipa to spelling map preprocessed: 948923 bytes
 - cmudict lines direct to json: 680943 bytes
 
-shrinking the filesize (if necessary)
+shrinking the filesize
+- [x] remove unused stress annotations (saved about 500Kb)
+- [ ] ? convert arpabet to ipa at the preprocessing step? (would have to tokenize dipthongs)
 - [ ] use a trie
-- [ ] remove unused stress annotations
-
-TODO performance: ?

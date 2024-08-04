@@ -1,30 +1,38 @@
 #!/usr/bin/env python3
+'''
+Map a cmudict file to a JSON file containing:
+{
+  "cmu_by_len": {phoneme_len : <concatenated words of that len>},
+  "cmu_to_spelling": {cmu_word : [<spellings matching that pronunciation>]}
+}
+'''
 
 import json
+import re
 
 with open("cmudict-0.7b", "r") as f:
-  ipa_by_len = {}
+  cmu_by_len = {}
   to_spelling = {}
   for line in f.readlines():
-    (spelling, ipa) = line.split('  ')
-    ipa = ipa.strip()
-    ipa_len = len(ipa.split(' '))
-    to_spelling[ipa] = to_spelling.get(ipa, []) + [spelling]
+    (spelling, cmu) = line.split('  ')
+    # remove stress annotations from cmu string, except AH0
+    cmu = [
+      (ph if ph=="AH0" else re.sub('[012]', '', ph))
+      for ph in cmu.strip().split(' ')
+    ]
+    cmu_len = len(cmu)
+    cmu = ' '.join(cmu)
+    to_spelling[cmu] = to_spelling.get(cmu, []) + [spelling]
 
-    if (ipa_len not in ipa_by_len):
-      ipa_by_len[ipa_len] = []
-    ipa_by_len[ipa_len].append(ipa)
-  for i, listy in ipa_by_len.items():
+    if (cmu_len not in cmu_by_len):
+      cmu_by_len[cmu_len] = []
+    cmu_by_len[cmu_len].append(cmu)
+  for i, listy in cmu_by_len.items():
     print(i, listy)
-    ipa_by_len[i] = ',' + ','.join(listy) + ','
-  print("lengths:", list(ipa_by_len.keys()))
-  with open("ipa_by_len.json", "w") as fout:
+    cmu_by_len[i] = ',' + ','.join(listy) + ','
+  print("lengths:", list(cmu_by_len.keys()))
+  with open("cmu_by_len.json", "w") as fout:
     fout.write(json.dumps({
-      "ipa_by_len": ipa_by_len,
-      "ipa_to_spelling": to_spelling,
+      "cmu_by_len": cmu_by_len,
+      "cmu_to_spelling": to_spelling,
     }))
-
-#with open("cmudict-5-phonemes", "r") as f:
-#  data = [line.strip().split('  ') for line in f.readlines()]
-#  with open("cmudict.json", "w") as fout:
-#    fout.write(json.dumps(data))

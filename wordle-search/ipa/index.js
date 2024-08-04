@@ -57,8 +57,9 @@ const ipaToCmu = {
   "ʒ": "ZH",
 };
 
-// map cmu base chars back to IPA -- note that we will also have to parse
-// out the stress annotations
+// map cmu base chars back to IPA
+// note that we will also have to parse out the stress annotations
+// note that cmudict does not unambiguously distinguish ɝ from ɚ
 const cmuToIpaBase = Object.fromEntries(
   Object.entries(ipaToCmu)     // convert to nested list of entries
   .map((tup)=>[tup[1],tup[0]]) // reverse order
@@ -81,7 +82,7 @@ let myApp = makeWordleSearchApp(
   // ng-controller name
   'WordleSearchCtrl', 
   // word data source
-  './ipa_by_len.json',
+  './cmu_by_len.json',
 
   // valid "characters" (phonemes)
   Object.keys(ipaToCmu),
@@ -114,9 +115,11 @@ let myApp = makeWordleSearchApp(
       (this.wordsByLen[this.wordLen].match(re) ?? [])
       .map((s) => {
         // remove word delimiters
-        s = s.replace(new RegExp(ipaDelim, 'g'), '')
+        let cmuStr = s.replace(new RegExp(ipaDelim, 'g'), '')
         // map each cmu phoneme back to ipa
-        return s.split(' ').map((ph) => cmuToIpa(ph)).join('');
+        let ipaStr = cmuStr.split(' ').map((ph) => cmuToIpa(ph)).join('');
+        console.log(cmuStr, ipaStr);
+        return `/${ipaStr}/ - ` + (this.cmuToSpelling[cmuStr] ?? []).join(', ');
       })
     );
   },
@@ -124,7 +127,7 @@ let myApp = makeWordleSearchApp(
     // constants
     phonemes: phonemes,
     // TESTING ONLY
-    greens: ['s', '', 'n', 'd', ''],
+    greens: ['p', '', 'n', 'd', ''],
 
     // initial state
     currCell: {},
@@ -136,8 +139,8 @@ let myApp = makeWordleSearchApp(
 
     // process json data
     processData: function(data) {
-      this.wordsByLen = data.ipa_by_len;
-      this.ipaToSpelling = data.ipa_to_spelling;
+      this.wordsByLen = data.cmu_by_len;
+      this.cmuToSpelling = data.cmu_to_spelling;
     },
 
     // set output of ipa keyboard on the scope
