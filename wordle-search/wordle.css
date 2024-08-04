@@ -1,3 +1,7 @@
+#go {
+  margin-bottom: 2em;
+}
+
 .column {
   display: inline-block;
   vertical-align: text-top;
@@ -14,6 +18,7 @@
 
   font-weight: bold;
   font-family: sans-serif;
+  box-sizing: border-box;
   border: 1px solid #000;
   border-radius: 2px;
 

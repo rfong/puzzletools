@@ -25,3 +25,14 @@
 .wordle-cell.highlight {
   border: 1px solid #f00;
 }
+
+.yellow-column {
+  display: inline-block;
+  width: 50px;
+  margin-right: 5px;
+  margin-bottom: 5px;
+  vertical-align: text-top;
+}
+.yellow-column .wordle-cell {
+  display: block;
+}

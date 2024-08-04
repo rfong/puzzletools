@@ -88,6 +88,14 @@ function wordleSearchControllerSetup(
     $scope.yellowInputs = cropOrExtendArray($scope.yellowInputs, $scope.wordLen, '');
   };
 
+  // clear all
+  $scope.clearData = function() {
+    $scope.greens = [];
+    $scope.yellows = [];
+    $scope.yellowInputs = [];
+    $scope.onLenChange();
+  };
+
   // check if ok to submit, if not issue warnings
   $scope.checkInputs = function() {
     let warnings = []

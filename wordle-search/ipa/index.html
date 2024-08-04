@@ -24,6 +24,9 @@
                 ng-change="onLenChange()"
                 ></select>
       </div>
+      <div>
+        <button ng-click="clearData()">clear all</button>
+      </div>
     
       <h3>greys (disallowed letters)</h3>
       <div id="grey-cells">
@@ -66,25 +69,29 @@
       </div>
     
       <h3>yellows (letters in wrong positions)</h3>
-      <table id="yellow-rows">
-        <tr ng-repeat="yellowRow in yellows track by $index"
-            class="yellow-posn">
-          <td>position {{$index+1}}: </td>
-          <td>
-            <input class="yellow-input"
-                   ng-change="onYellowChange($index)"
-                   ng-model="yellowInputs[$index]"
-                   data-posn="${index}" 
-                   placeholder="a,b,..." />
-          </td>
-          <td class="yellow-cells">
-            <span ng-repeat="val in yellowRow"
-                  class="wordle-cell yellow-cell"
-                  >{{val}}</span>
-          </td>
-        </tr>
-      </table>
-    
+      <div class="yellow-column"
+           ng-repeat="subYellows in yellows track by $index"
+           ng-init="yellowIndex=$index">
+        <div class="wordle-cell"
+             ng-click="yellows[yellowIndex].push(''); console.log('expand yellows:',yellows);
+                       promptYellow(yellowIndex, subYellows.length-1)"
+             >+</div>
+        <div ng-repeat="ph in subYellows track by $index"
+             class="wordle-cell yellow-cell"
+             ng-class="{
+               'yellow-cell': isValidChar(ph),
+               'empty-cell': !isValidChar(ph),
+               'highlight': isTakingInput('yellow',yellowIndex,$index),
+             }"
+             ng-click="promptYellow(yellowIndex, $index)"
+             >{{ isValidChar(ph) ? ph : "x" }}{{$subIndex}}</div>
+      </div>
+      <div ipa-keyboard
+           ng-show="currCell.color=='yellow'"
+           phonemes="phonemes"
+           ipa-keypress="ipaKeypress(ph)"
+           ></div>
+
       <div>
         <button id="go"
                 ng-click="search()"
@@ -100,7 +107,6 @@
     <div class="column">
 
       <div>ipa input: {{ipaInput}}</div>
-      <div>keyboard open states: {{keyboardOpenStates}}</div>
       <div>cell taking input: {{currCell}}</div>
 
       <div id="output"

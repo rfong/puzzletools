@@ -44,9 +44,9 @@ let myApp = makeWordleSearchApp(
     // constants
     phonemes: phonemes,
     allPhonemes: allPhonemes,
+    yellows: [['i','d','k'],[],['k'],[],[]],
 
-    // state
-    keyboardOpenStates: {},
+    // initial state
     currCell: {},
 
     // set output of ipa keyboard on the scope
@@ -95,13 +95,19 @@ let myApp = makeWordleSearchApp(
 
     // prompt for a yellow character
     promptYellow: function(index, subIndex) {
+      console.debug(`prompt yellow (${index},${subIndex})`);
       // note which cell is currently being highlighted
       this.setCellTakingInput('yellow', index, subIndex);
     },
     // set a yellow character
     setYellow: function(index, subIndex, c) {
-      this.yellows[index][subIndex] = c;
-      console.debug(`set ${c} at yellow (${index},${subIndex})`);
+      if (this.isValidChar(c)) {
+        this.yellows[index][subIndex] = c;
+        console.debug(`set ${c} at yellow (${index},${subIndex})`);
+      } else {
+        // remove if invalid/empty
+        this.yellows[index].splice(subIndex, 1);
+      }
       this.checkInputs();
     },
 
@@ -118,7 +124,7 @@ let myApp = makeWordleSearchApp(
       return (
         color===this.currCell.color &&
         index===this.currCell.index &&
-        (!subIndex || subIndex===this.currCell.subIndex)
+        (subIndex==undefined || subIndex===this.currCell.subIndex)
       );
     },
 
