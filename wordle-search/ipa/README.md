@@ -1,6 +1,6 @@
 # todos
 - [x] filter cmudict by wordnik words
-- [ ] bug: empty yellow cells should disappear when cell focus ends
+- [x] bug: empty yellow cells should disappear when cell focus ends
 
 # cmudict notes
 
@@ -25,4 +25,4 @@ shrinking the filesize
 - [x] remove unused stress annotations (saved ~500Kb)
 - [x] wordnik filter (saved ~4Mb)
 - [ ] ? convert arpabet to ipa at the preprocessing step? (would have to tokenize dipthongs)
-- [ ] use a trie representation
+- ~~[ ] use a trie representation in-memory~~ this is worse for perf
