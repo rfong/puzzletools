@@ -102,7 +102,6 @@ function wordleSearchControllerSetup(
     let greySet = new Set($scope.greys);
     let greenSet = new Set($scope.greens);
     let yellowSet = new Set(flatten($scope.yellows));
-    console.debug(greySet, greenSet, yellowSet);
     if (greySet.intersection(greenSet).size > 0) {
       warnings.push("grey letters should not overlap with green letters");
     }

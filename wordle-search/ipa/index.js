@@ -197,8 +197,13 @@ let myApp = makeWordleSearchApp(
     // set a grey input
     setGrey: function(index, ph) {
       if (this.isValidChar(ph)) {
-        this.greys[index] = ph;
-        console.debug(`set ${ph} at grey index=${index}`);
+        if (index == -1) {
+          this.greys.push(ph);
+          console.debug(`appended ${ph} to greys`);
+        } else {
+          this.greys[index] = ph;
+          console.debug(`set ${ph} at grey index=${index}`);
+        }
       } else {
         // remove if invalid/empty
         this.greys.splice(index, 1);
@@ -209,8 +214,13 @@ let myApp = makeWordleSearchApp(
     // set a yellow input
     setYellow: function(index, subIndex, ph) {
       if (this.isValidChar(ph)) {
-        this.yellows[index][subIndex] = ph;
-        console.debug(`set ${ph} at yellow (${index},${subIndex})`);
+        if (subIndex == -1) {
+          this.yellows[index] = this.yellows[index].concat([ph]);
+          console.debug(`appended ${ph} to yellow (${index})`);
+        } else {
+          this.yellows[index][subIndex] = ph;
+          console.debug(`set ${ph} at yellow (${index},${subIndex})`);
+        }
       } else {
         // remove if invalid/empty
         this.yellows[index].splice(subIndex, 1);
@@ -218,18 +228,14 @@ let myApp = makeWordleSearchApp(
       this.checkInputs();
     },
 
-    // add a new yellow cell and immediately prompt it
-    addAndPromptYellow: function(index) {
-      // for some reason `this.yellows[index].push(x)` appends `x` to every 
-      // sub-array instead of just the indexed one, but I can only reproduce 
-      // it in this app. using a workaround.
-      this.yellows[index] = this.yellows[index].concat(['']);
-      this.promptCell(this.YELLOW, index, this.yellows[index].length-1);
-    },
-
     promptCell: function(color, index, subIndex) {
-      // Specifies a unique cell currently accepting keyboard input.
-      console.debug(`prompt color=${color} (${index},${subIndex})`);
+      /* specifies a unique cell currently accepting keyboard input.
+       * @param index {int} - position in the word
+       * @param subIndex {int} - either sub-index for multiple values in one 
+       *   position, or -1 to denote that the position does not exist yet and 
+       *   should be added
+       */
+      console.debug(`receiving input for cell: color=${color} (${index},${subIndex})`);
       this.currCell = {
         color: color,
         index: index,

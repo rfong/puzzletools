@@ -46,7 +46,8 @@
              ng-click="promptCell(GREY, $index)"
              >{{ isValidChar(ph) ? ph : "x" }}</div>
         <div class="wordle-cell"
-             ng-click="greys.push(''); promptCell(GREY, greys.length-1)"
+             ng-click="promptCell(GREY, -1)"
+             ng-class="{'highlight': isTakingInput(GREY,-1)}"
              >+</div>
       </div>
       <div ipa-keyboard
@@ -79,7 +80,8 @@
            ng-repeat="subYellows in yellows track by $index"
            ng-init="yellowIndex=$index">
         <div class="wordle-cell"
-             ng-click="addAndPromptYellow(yellowIndex)"
+             ng-click="promptCell(YELLOW, yellowIndex, -1)"
+             ng-class="{'highlight': isTakingInput(YELLOW,yellowIndex,-1)}"
              >+</div>
         <div ng-repeat="ph in subYellows track by $index"
              class="wordle-cell yellow-cell"
