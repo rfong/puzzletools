@@ -93,6 +93,7 @@ function wordleSearchControllerSetup(
     $scope.greens = [];
     $scope.yellows = [];
     $scope.yellowInputs = [];
+    $scope.greys = [];
     $scope.onLenChange();
   };
 
