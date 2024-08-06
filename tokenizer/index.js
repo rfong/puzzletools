@@ -2,11 +2,6 @@ import { setHidden, getEl } from "../helpers.js";
 import { ParseError, isTokenBankValid, InvalidTokenBankError, Tokenizer } from "./tokenizer.js";
 import { getOutput, getUpdatedMap, isWhitespaceInTokens } from "./helpers.js";
 
-// shorthand for get element by id
-function getEl(id) {
-  return document.getElementById(id);
-}
-
 const tokensInput = getEl("tokens"),
       delimiterInput = getEl("delimiter"),
       textInput = getEl("input"),
