@@ -13,7 +13,7 @@
 
     <h1>IPA wordle-search</h1>
     <p class="footnote" style="max-width: 500px;">
-    limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a> filtered by the <a href="https://github.com/wordnik/wordlist">wordnik dictionary</a>.
+    limited to american english; searches the <a href="https://github.com/Alexir/CMUdict/">CMU pronouncing dictionary</a>, filtered by the <a href="https://github.com/wordnik/wordlist">wordnik dictionary</a>.
       <br/>
       - note that dipthongs are counted as a single phoneme for length purposes.
       <br/>
@@ -109,6 +109,10 @@
       <div ng-repeat="msg in warnings"
            class="warning"
            >{{msg}}</div>
+
+      <p class="footnote" style="max-width: 500px;">
+        I wrote this tool to help me construct <a href="https://www.two-pi-noir.agency/puzzles/bar_talk?">this puzzle for MIT Mystery Hunt</a>, but I guess you could also use it to cheat at <a href="https://nascl.rc.nau.edu/gramle/">Gramle</a>.
+      </p>
 
     </div>
     <div class="column">
